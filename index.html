@@ -1,177 +1,532 @@
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Pointillism Lily</title>
+<title>A Lily for Lina ♡</title>
+
 <style>
-  :root { color-scheme: dark; }
-  * { box-sizing: border-box; }
-  html, body { margin:0; width:100%; height:100%; overflow:hidden; background:#04020a; }
-  body { display:grid; place-items:center; font-family:system-ui,-apple-system,Segoe UI,sans-serif; }
-  #stage { position:relative; width:min(100vw,56.25vh); height:min(100vh,177.7778vw); background:#04020a; overflow:hidden; }
-  canvas { width:100%; height:100%; display:block; }
-  .hud { position:absolute; left:12px; right:12px; bottom:max(12px,env(safe-area-inset-bottom)); display:flex; justify-content:center; gap:8px; opacity:.0; transition:opacity .25s; }
-  #stage:hover .hud, #stage:focus-within .hud { opacity:1; }
-  button { color:#f8eaf3; background:#211629cc; border:1px solid #8f6688; border-radius:999px; padding:9px 15px; font:500 13px system-ui; cursor:pointer; backdrop-filter:blur(8px); }
-  button:hover { background:#432641; }
-  .hint { position:absolute; top:12px; left:0; right:0; text-align:center; color:#d7b9d0; font-size:11px; letter-spacing:.08em; opacity:.55; pointer-events:none; }
-  @media (hover:none) { .hud { opacity:.85; } }
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #04020a;
+}
+
+body {
+  display: grid;
+  place-items: center;
+  font-family: Georgia, serif;
+}
+
+#stage {
+  position: relative;
+  width: min(100vw,56.25vh);
+  height: min(100vh,177.7778vw);
+  background: #04020a;
+  overflow: hidden;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hint {
+  position: absolute;
+  top: 7%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #f8c9e9;
+  font-size: clamp(30px,6vw,46px);
+  letter-spacing: .2em;
+  text-shadow: 0 0 15px #ed8acb, 0 0 35px #a54b91;
+  opacity: 0;
+  animation: reveal 3s ease forwards;
+  animation-delay: 1s;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.dedication {
+  position: absolute;
+  top: 12%;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #e8bfdc;
+  font-size: 13px;
+  letter-spacing: .12em;
+  opacity: 0;
+  animation: reveal 3s ease forwards;
+  animation-delay: 3s;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.final-message {
+  position: absolute;
+  bottom: 13%;
+  left: 8%;
+  right: 8%;
+  text-align: center;
+  color: #f5d6e9;
+  font-size: clamp(16px,3.5vw,21px);
+  line-height: 1.7;
+  letter-spacing: .04em;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 2.5s ease, transform 2.5s ease;
+  text-shadow: 0 0 15px #d86bb9;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.final-message.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: .95; transform: translateY(0); }
+}
+
+.hud {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: max(12px,env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity .25s;
+  z-index: 3;
+}
+
+#stage:hover .hud,
+#stage:focus-within .hud { opacity: 1; }
+
+button {
+  color: #f8eaf3;
+  background: #211629cc;
+  border: 1px solid #8f6688;
+  border-radius: 999px;
+  padding: 9px 15px;
+  font: 500 13px system-ui;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+button:hover { background: #432641; }
+
+@media (hover:none) {
+  .hud { opacity: .85; }
+}
 </style>
 </head>
+
 <body>
-<div id="stage" tabindex="0" aria-label="Animated pointillism lily">
+<div id="stage" tabindex="0" aria-label="A magical lily created for Lina">
+
   <canvas id="flower" width="720" height="1280"></canvas>
-  <div class="hint">POINTILLISM LILY</div>
+
+  <div class="hint">LINA</div>
+  <div class="dedication">A LITTLE FLOWER, JUST FOR YOU ♡</div>
+
+  <div class="final-message" id="finalMessage">
+    Some flowers bloom in gardens,<br>
+    others bloom in someone's heart.<br>
+    <span style="color:#ffb9df">This one is for you, Lina. ♡</span>
+  </div>
+
   <div class="hud">
-    <button id="pause">Pause</button><button id="restart">Restart</button>
+    <button id="pause">Pause</button>
+    <button id="restart">Restart</button>
     <button id="fullscreen">Fullscreen</button>
   </div>
 </div>
+
 <script>
 (() => {
 'use strict';
-const W=720,H=1280, S=1, FPS=60;
-const T_STEM=4, T_B0=5, T_B1=15, BG='#04020a';
-const canvas=document.getElementById('flower'), ctx=canvas.getContext('2d',{alpha:false});
-const image=ctx.createImageData(W,H), pixels=image.data;
-let t=0, paused=false, last=0, raf=0;
+
+const W=720,H=1280;
+const T_STEM=4,T_B0=5,T_B1=15,BG='#04020a';
+const canvas=document.getElementById('flower');
+const ctx=canvas.getContext('2d',{alpha:false});
+
+let t=0,paused=false,last=0;
 let seed=11;
-function rand(){ seed=(seed*1664525+1013904223)>>>0; return seed/4294967296; }
-function randn(){ return Math.sqrt(-2*Math.log(Math.max(1e-9,rand())))*Math.cos(2*Math.PI*rand()); }
+
+function rand(){
+  seed=(seed*1664525+1013904223)>>>0;
+  return seed/4294967296;
+}
+
+function randn(){
+  return Math.sqrt(-2*Math.log(Math.max(1e-9,rand())))
+  *Math.cos(2*Math.PI*rand());
+}
+
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
 const lerp=(a,b,x)=>a+(b-a)*x;
-const gx=W/2, gy=H*.82, HS=380;
-const dots=[], leaves=[], petals=[], rings=[], dust=[], seeds=[];
-function colMix(a,b,x){return a.map((v,i)=>lerp(v,b[i],x));}
-function addDot(x,y,c,alpha=1,r=1){ if(x<0||x>=W||y<0||y>=H)return; dots.push([x,y,c,alpha,r]); }
-function stemX(s,time){return gx+30*Math.sin(2.2*s)+10*Math.sin(.9*time)*s*s;}
+
+const gx=W/2,gy=H*.82,HS=380;
+const dots=[],leaves=[],petals=[],rings=[],dust=[],seeds=[];
+
+function colMix(a,b,x){
+  return a.map((v,i)=>lerp(v,b[i],x));
+}
+
+function stemX(s,time){
+  return gx+30*Math.sin(2.2*s)+10*Math.sin(.9*time)*s*s;
+}
+
 function stemY(s){return gy-s*HS;}
+
 function midrib(L,a0,curl,K=40){
-  const us=[],r=[],h=[]; let rr=0,hh=0; us.push(0);r.push(0);h.push(0);
-  for(let i=1;i<=K;i++){const u=i/K,a=a0+curl*Math.pow(u,1.6);rr+=Math.sin(a)*L/K;hh+=Math.cos(a)*L/K;us.push(u);r.push(rr);h.push(hh);}
+  const us=[],r=[],h=[];
+  let rr=0,hh=0;
+  us.push(0);r.push(0);h.push(0);
+
+  for(let i=1;i<=K;i++){
+    const u=i/K,a=a0+curl*Math.pow(u,1.6);
+    rr+=Math.sin(a)*L/K;
+    hh+=Math.cos(a)*L/K;
+    us.push(u);r.push(rr);h.push(hh);
+  }
   return {us,r,h};
 }
-function interp(arr,u){const x=clamp(u)*40,i=Math.min(39,Math.floor(x)),f=x-i;return lerp(arr[i],arr[i+1],f);}
+
+function interp(arr,u){
+  const x=clamp(u)*40;
+  const i=Math.min(39,Math.floor(x)),f=x-i;
+  return lerp(arr[i],arr[i+1],f);
+}
+
+function drawPoint(x,y,c,a=1,r=1){
+  if(x<0||x>=W||y<0||y>=H)return;
+  ctx.globalAlpha=a;
+  ctx.fillStyle=`rgb(${clamp(c[0],0,255)|0},${clamp(c[1],0,255)|0},${clamp(c[2],0,255)|0})`;
+  ctx.fillRect(x,y,r,r);
+}
+
 function makeData(){
+
   for(let i=0;i<5000;i++){
-    const dx=(rand()*680-340), mound=(1-(dx/340)**2)*55;
+    const dx=(rand()*680-340);
+    const mound=(1-(dx/340)**2)*55;
     const y=gy-mound*Math.pow(rand(),.5)+randn()*1.5;
     const c=[lerp(70,140,rand()),lerp(55,100,rand()),lerp(80,120,rand())];
     dots.push([gx+dx,y,c,.8,1]);
   }
+
   for(let i=0;i<3200;i++){
-    const s=rand(), dx=randn()*3.2*(1-.5*s);
+    const s=rand(),dx=randn()*3.2*(1-.5*s);
     const c=[lerp(40,120,s),lerp(150,215,s),lerp(95,120,s)];
-    const f=.8+.4*rand(); seeds.push({s,dx,c:c.map(v=>v*f)});
+    const f=.8+.4*rand();
+    seeds.push({s,dx,c:c.map(v=>v*f)});
   }
+
   for(let i=0;i<4;i++){
-    const s0=[.10,.24,.40,.56][i], L=[190,175,150,120][i], side=i%2===0?1:-1;
+    const s0=[.10,.24,.40,.56][i];
+    const L=[190,175,150,120][i];
+    const side=i%2===0?1:-1;
     const pts=[];
+
     for(let j=0;j<900;j++){
-      const u=Math.pow(rand(),.9),v=rand()*2-1,prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.8)),.8);
+      const u=Math.pow(rand(),.9),v=rand()*2-1;
+      const prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.8)),.8);
       let c=[lerp(40,140,u),lerp(160,235,u),lerp(100,140,u)];
+
       if(Math.abs(v)<.08)c=[190,240,170];
-      const f=.8+.4*rand(); c=c.map(x=>x*f);
+
+      const f=.8+.4*rand();
+      c=c.map(x=>x*f);
       pts.push({u,v,prof,c});
     }
     leaves.push({s0,L,side,pts});
   }
+
   for(let k=0;k<6;k++){
-    const outer=k%2===0, pts=[];
+    const outer=k%2===0,pts=[];
+
     for(let j=0;j<2300;j++){
-      const u=Math.pow(rand(),.85),v=rand()*2-1,prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.7)),.9);
+      const u=Math.pow(rand(),.85),v=rand()*2-1;
+      const prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.7)),.9);
+
       let c=[lerp(205,255,u),lerp(40,195,u),lerp(125,228,u)];
+
       if(Math.abs(v)<.07&&u<.55)c=[235,225,150];
       else if(rand()<.10&&u<.6&&Math.abs(v)<.75)c=[140,15,80];
+
       if(Math.abs(v)>.88)c=c.map(x=>x*1.08);
-      const f=.82+.35*rand(); c=c.map(x=>x*f);
+
+      const f=.82+.35*rand();
+      c=c.map(x=>x*f);
       pts.push({u,v,prof,c});
     }
-    petals.push({phi:(k*60+8)*Math.PI/180,L:outer?300:280,Wm:outer?64:72,ac:outer?.10:.05,ao:outer?1.05:.82,curl:outer?.95:.75,pts});
+
+    petals.push({
+      phi:(k*60+8)*Math.PI/180,
+      L:outer?300:280,
+      Wm:outer?64:72,
+      ac:outer?.10:.05,
+      ao:outer?1.05:.82,
+      curl:outer?.95:.75,
+      pts
+    });
   }
+
   for(let i=0;i<1100;i++)rings.push(rand()*Math.PI*2);
-  for(let k=0;k<6;k++){const a=[];for(let i=0;i<260;i++)a.push(rand()*Math.PI*2);seeds.push({ringAngles:a});}
-  for(let i=0;i<450;i++)dust.push({x:rand()*W,y:rand()*H,s:lerp(6,22,rand()),ph:rand()*6.28,f:lerp(1,4,rand())});
-  for(let i=0;i<140;i++)seeds.push({float:true,off:rand(),ph:rand()*6.28,dr:lerp(-80,80,rand()),sp:lerp(.05,.12,rand())});
+
+  for(let k=0;k<6;k++){
+    const a=[];
+    for(let i=0;i<260;i++)a.push(rand()*Math.PI*2);
+    seeds.push({ringAngles:a});
+  }
+
+  for(let i=0;i<450;i++){
+    dust.push({
+      x:rand()*W,
+      y:rand()*H,
+      s:lerp(6,22,rand()),
+      ph:rand()*6.28,
+      f:lerp(1,4,rand())
+    });
+  }
+
+  for(let i=0;i<140;i++){
+    seeds.push({
+      float:true,
+      off:rand(),
+      ph:rand()*6.28,
+      dr:lerp(-80,80,rand()),
+      sp:lerp(.05,.12,rand())
+    });
+  }
 }
-function drawPoint(x,y,c,a=1,r=1){
-  if(x<0||x>=W||y<0||y>=H)return;
-  ctx.globalAlpha=a;ctx.fillStyle=`rgb(${clamp(c[0],0,255)|0},${clamp(c[1],0,255)|0},${clamp(c[2],0,255)|0})`;
-  ctx.fillRect(x,y,r,r);
-}
+
 function render(time){
-  ctx.fillStyle=BG;ctx.fillRect(0,0,W,H);
-  // Subtle drifting stars
-  for(const d of dust){const tw=.35+.65*(Math.sin(time*d.f+d.ph)>.2?1:0),y=(d.y-time*d.s)%H;drawPoint(d.x,y,[255,200,235],.28*tw,1);}
-  const g=smooth(time/T_STEM), e=smooth((time-T_B0)/(T_B1-T_B0)), rev=smooth((time-T_STEM+.3)/1.6);
+
+  ctx.fillStyle=BG;
+  ctx.fillRect(0,0,W,H);
+
+  for(const d of dust){
+    const tw=.35+.65*(Math.sin(time*d.f+d.ph)>.2?1:0);
+    const y=(d.y-time*d.s)%H;
+    drawPoint(d.x,y,[255,200,235],.28*tw,1);
+  }
+
+  const g=smooth(time/T_STEM);
+  const e=smooth((time-T_B0)/(T_B1-T_B0));
+  const rev=smooth((time-T_STEM+.3)/1.6);
+
   const hx=stemX(1,time),hy=stemY(1);
-  // Magical orbital rings
+
   const ha=smooth((time-T_B0+1.5)/4)*.9;
+
   if(ha>.01){
     const cx=hx,cy=hy-90,R=300,rot=time*.12;
-    ctx.save();ctx.globalAlpha=ha*.45;ctx.strokeStyle='#ffbede';ctx.lineWidth=1;
-    ctx.setLineDash([2,7]);ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
-    for(let k=0;k<6;k++){const ca=rot*1.3+k*Math.PI/3,ox=cx+R*Math.cos(ca),oy=cy+R*Math.sin(ca);ctx.beginPath();ctx.arc(ox,oy,R*.5,0,Math.PI*2);ctx.stroke();}
+    ctx.save();
+    ctx.globalAlpha=ha*.45;
+    ctx.strokeStyle='#ffbede';
+    ctx.lineWidth=1;
+    ctx.setLineDash([2,7]);
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,0,Math.PI*2);
+    ctx.stroke();
+
+    for(let k=0;k<6;k++){
+      const ca=rot*1.3+k*Math.PI/3;
+      const ox=cx+R*Math.cos(ca),oy=cy+R*Math.sin(ca);
+      ctx.beginPath();
+      ctx.arc(ox,oy,R*.5,0,Math.PI*2);
+      ctx.stroke();
+    }
     ctx.restore();
   }
-  // Soil pointillism
-  for(let i=0;i<5000;i++){const p=dots[i];drawPoint(p[0],p[1],p[2],p[3],1);}
-  // Stem
-  for(const q of seeds){if(q.s!==undefined&&q.s<=g){drawPoint(stemX(q.s,time)+q.dx,stemY(q.s),q.c,.9,2);}}
-  // Leaves
-  for(const lf of leaves){
-    const lg=clamp((g-lf.s0)*2.5);if(lg<=.01)continue;
-    const L=lf.L*lg, m=midrib(L,.85,1.1);
-    const bx=stemX(lf.s0,time),by=stemY(lf.s0),sway=Math.sin(time*1.2+lf.s0*5)*.03;
-    for(const p of lf.pts){const rr=interp(m.r,p.u),hh=interp(m.h,p.u),wid=15*Math.pow(Math.sin(Math.PI*Math.pow(p.u,.8)),.8)*lg;
-      const x=bx+lf.side*(rr+p.v*wid*.35)+sway*hh*lf.side,y=by-hh+p.v*wid;drawPoint(x,y,p.c,.95,2);}
+
+  for(let i=0;i<5000;i++){
+    const p=dots[i];
+    drawPoint(p[0],p[1],p[2],p[3],1);
   }
-  // Blooming petals
+
+  for(const q of seeds){
+    if(q.s!==undefined&&q.s<=g){
+      drawPoint(stemX(q.s,time)+q.dx,stemY(q.s),q.c,.9,2);
+    }
+  }
+
+  for(const lf of leaves){
+    const lg=clamp((g-lf.s0)*2.5);
+    if(lg<=.01)continue;
+
+    const L=lf.L*lg,m=midrib(L,.85,1.1);
+    const bx=stemX(lf.s0,time),by=stemY(lf.s0);
+    const sway=Math.sin(time*1.2+lf.s0*5)*.03;
+
+    for(const p of lf.pts){
+      const rr=interp(m.r,p.u),hh=interp(m.h,p.u);
+      const wid=15*Math.pow(Math.sin(Math.PI*Math.pow(p.u,.8)),.8)*lg;
+      const x=bx+lf.side*(rr+p.v*wid*.35)+sway*hh*lf.side;
+      const y=by-hh+p.v*wid;
+      drawPoint(x,y,p.c,.95,2);
+    }
+  }
+
   if(rev>.01){
-    const psi=.25+time*.22,tau=.5,cp=Math.cos(psi),sp=Math.sin(psi),ct=Math.cos(tau),st=Math.sin(tau),swayT=Math.sin(time*.8)*.02;
+
+    const psi=.25+time*.22;
+    const tau=.5;
+    const cp=Math.cos(psi),sp=Math.sin(psi);
+    const ct=Math.cos(tau),st=Math.sin(tau);
+    const swayT=Math.sin(time*.8)*.02;
+
     for(const p of petals){
-      const Ls=p.L*(.45+.55*e)*(.35+.65*rev),a0=lerp(p.ac,p.ao,e),curl=(.12+.88*e)*p.curl,m=midrib(Ls,a0,curl);
-      for(const d of p.pts){if(d.u>rev)continue;
-        const rr=interp(m.r,d.u),hh=interp(m.h,d.u),wid=p.Wm*(.55+.45*e)*d.prof*(.35+.65*rev),ph=p.phi;
-        const X=rr*Math.cos(ph)-d.v*wid*Math.sin(ph),Z=rr*Math.sin(ph)+d.v*wid*Math.cos(ph);
-        const Y=hh+d.v*d.v*wid*(.30*(1-e)-.25*e),Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp,sy=Y*ct-Zp*st;
-        const shade=.55+.45*clamp(Zp/p.L*.8+.5),tint=(1-e)*clamp(d.u*1.3)*.6;
+      const Ls=p.L*(.45+.55*e)*(.35+.65*rev);
+      const a0=lerp(p.ac,p.ao,e);
+      const curl=(.12+.88*e)*p.curl;
+      const m=midrib(Ls,a0,curl);
+
+      for(const d of p.pts){
+        if(d.u>rev)continue;
+
+        const rr=interp(m.r,d.u),hh=interp(m.h,d.u);
+        const wid=p.Wm*(.55+.45*e)*d.prof*(.35+.65*rev);
+        const ph=p.phi;
+
+        const X=rr*Math.cos(ph)-d.v*wid*Math.sin(ph);
+        const Z=rr*Math.sin(ph)+d.v*wid*Math.cos(ph);
+        const Y=hh+d.v*d.v*wid*(.30*(1-e)-.25*e);
+
+        const Xp=X*cp+Z*sp;
+        const Zp=-X*sp+Z*cp;
+        const sy=Y*ct-Zp*st;
+
+        const shade=.55+.45*clamp(Zp/p.L*.8+.5);
+        const tint=(1-e)*clamp(d.u*1.3)*.6;
         const c=colMix(d.c,[135,205,125],tint).map(v=>v*shade);
+
         drawPoint(hx+Xp+swayT*sy,hy-sy,c,.96,2);
       }
     }
-    // Warm center stamens
+
     if(e>.28){
       const sr=smooth((e-.28)/.4);
+
       for(let k=0;k<6;k++){
-        const ph=(k*60+38)*Math.PI/180,Ls=215*(.4+.6*e)*sr,m=midrib(Ls,lerp(.15,.62,e),.55*e);
-        for(let j=0;j<45;j++){const u=rand(),rr=interp(m.r,u),hh=interp(m.h,u),X=rr*Math.cos(ph),Z=rr*Math.sin(ph),Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp,sy=hh*ct-Zp*st;drawPoint(hx+Xp,hy-sy,[245,235,200],.95,2);}
-        const rr=m.r[40],hh=m.h[40],X=rr*Math.cos(ph),Z=rr*Math.sin(ph),Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp,sy=hh*ct-Zp*st;
-        for(let j=0;j<35;j++)drawPoint(hx+Xp+randn()*5,hy-sy+randn()*3,[255,150,40],.95,2);
+        const ph=(k*60+38)*Math.PI/180;
+        const Ls=215*(.4+.6*e)*sr;
+        const m=midrib(Ls,lerp(.15,.62,e),.55*e);
+
+        for(let j=0;j<45;j++){
+          const u=rand();
+          const rr=interp(m.r,u),hh=interp(m.h,u);
+          const X=rr*Math.cos(ph),Z=rr*Math.sin(ph);
+          const Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp;
+          const sy=hh*ct-Zp*st;
+          drawPoint(hx+Xp,hy-sy,[245,235,200],.95,2);
+        }
+
+        const rr=m.r[40],hh=m.h[40];
+        const X=rr*Math.cos(ph),Z=rr*Math.sin(ph);
+        const Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp;
+        const sy=hh*ct-Zp*st;
+
+        for(let j=0;j<35;j++){
+          drawPoint(hx+Xp+randn()*5,hy-sy+randn()*3,[255,150,40],.95,2);
+        }
       }
     }
-    // Floating pollen
-    if(e>.6){const fa=smooth((e-.6)/.4);
-      for(const q of seeds){if(!q.float)continue;const v=(time*q.sp+q.off)%1,x=hx+q.dr*v+Math.sin(v*7+q.ph)*25,y=(hy-110)+v*(gy-hy+90),fade=(1-v)*fa;drawPoint(x,y,q.ph>3.1?[255,190,80]:[255,150,205],fade,2);}
+
+    if(e>.6){
+      const fa=smooth((e-.6)/.4);
+
+      for(const q of seeds){
+        if(!q.float)continue;
+        const v=(time*q.sp+q.off)%1;
+        const x=hx+q.dr*v+Math.sin(v*7+q.ph)*25;
+        const y=(hy-110)+v*(gy-hy+90);
+        const fade=(1-v)*fa;
+        drawPoint(x,y,q.ph>3.1?[255,190,80]:[255,150,205],fade,2);
+      }
     }
   }
-  // Soft bloom glow
-  ctx.save();ctx.globalCompositeOperation='screen';ctx.globalAlpha=.18;ctx.filter='blur(12px)';ctx.drawImage(canvas,0,0);ctx.restore();
+
+  // Soft glow
+  ctx.save();
+  ctx.globalCompositeOperation='screen';
+  ctx.globalAlpha=.18;
+  ctx.filter='blur(12px)';
+  ctx.drawImage(canvas,0,0);
+  ctx.restore();
+
   ctx.globalAlpha=1;
+
+  // Show final dedication after the lily blooms
+  document.getElementById('finalMessage').classList.toggle('show',time>19);
 }
+
 function frame(now){
-  if(!paused){const dt=Math.min((now-last)/1000,.05);t+=dt;}
-  last=now;render(t);raf=requestAnimationFrame(frame);
+  if(!paused){
+    const dt=Math.min((now-last)/1000,.05);
+    t+=dt;
+  }
+  last=now;
+  render(t);
+  requestAnimationFrame(frame);
 }
+
 makeData();
-render(0);last=performance.now();raf=requestAnimationFrame(frame);
-document.getElementById('pause').addEventListener('click',()=>{paused=!paused;document.getElementById('pause').textContent=paused?'Resume':'Pause';});
-document.getElementById('restart').addEventListener('click',()=>{t=0;});
-document.getElementById('fullscreen').addEventListener('click',()=>{const el=document.getElementById('stage');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.();});
-document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();paused=!paused;document.getElementById('pause').textContent=paused?'Resume':'Pause';}if(e.key.toLowerCase()==='r')t=0;if(e.key==='Escape'&&document.fullscreenElement)document.exitFullscreen?.();});
+render(0);
+last=performance.now();
+requestAnimationFrame(frame);
+
+document.getElementById('pause').addEventListener('click',()=>{
+  paused=!paused;
+  document.getElementById('pause').textContent=paused?'Resume':'Pause';
+});
+
+document.getElementById('restart').addEventListener('click',()=>{
+  t=0;
+  document.getElementById('finalMessage').classList.remove('show');
+});
+
+document.getElementById('fullscreen').addEventListener('click',()=>{
+  const el=document.getElementById('stage');
+  if(!document.fullscreenElement)el.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'){
+    e.preventDefault();
+    paused=!paused;
+    document.getElementById('pause').textContent=paused?'Resume':'Pause';
+  }
+
+  if(e.key.toLowerCase()==='r'){
+    t=0;
+    document.getElementById('finalMessage').classList.remove('show');
+  }
+
+  if(e.key==='Escape'&&document.fullscreenElement){
+    document.exitFullscreen?.();
+  }
+});
+
 })();
 </script>
 </body>
-  </html>
+</html>
