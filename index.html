@@ -1,154 +1,243 @@
-
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>A Lily for Lina ♡</title>
-
+<title>A Blooming Lily for Lylia</title>
 <style>
-:root { color-scheme: dark; }
-* { box-sizing: border-box; }
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #04020a;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body {
+    display: grid;
+    place-items: center;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  }
+  #stage {
+    position: relative;
+    width: min(100vw, 56.25vh);
+    height: min(100vh, 177.7778vw);
+    background: #04020a;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(255, 140, 210, 0.12);
+    outline: none;
+  }
+  canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+    touch-action: none;
+  }
+  
+  /* Top Poetic Header */
+  .header-banner {
+    position: absolute;
+    top: max(16px, env(safe-area-inset-top));
+    left: 0;
+    right: 0;
+    text-align: center;
+    pointer-events: none;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .hint {
+    color: #f3d9ea;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 13px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    text-shadow: 0 0 12px rgba(255, 160, 220, 0.65);
+  }
+  .sub-hint {
+    color: #c89eb9;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    opacity: 0.65;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+    transition: opacity 0.6s ease;
+  }
 
-html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #04020a;
-}
+  /* Bottom HUD Controls */
+  .hud {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 7px;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+    z-index: 10;
+  }
+  #stage:hover .hud,
+  #stage:focus-within .hud,
+  .hud.visible {
+    opacity: 1;
+  }
+  button {
+    color: #f8eaf3;
+    background: rgba(33, 22, 41, 0.82);
+    border: 1px solid rgba(175, 120, 165, 0.55);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font: 500 12.5px system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  button:hover {
+    background: rgba(78, 42, 75, 0.9);
+    border-color: #e6a8d7;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(255, 130, 200, 0.22);
+  }
+  button:active {
+    transform: translateY(0);
+  }
+  button.special-btn {
+    background: linear-gradient(135deg, rgba(95, 38, 78, 0.88), rgba(48, 24, 58, 0.88));
+    border-color: #f4b6e2;
+    color: #fff0f9;
+  }
 
-body {
-  display: grid;
-  place-items: center;
-  font-family: Georgia, serif;
-}
+  /* Glassmorphism Dedication Card Modal for Lylia */
+  .note-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(4, 2, 10, 0.62);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    z-index: 25;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .note-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .note-card {
+    width: 100%;
+    max-width: 340px;
+    background: linear-gradient(160deg, rgba(42, 22, 48, 0.92), rgba(18, 10, 28, 0.95));
+    border: 1px solid rgba(245, 178, 222, 0.45);
+    border-radius: 24px;
+    padding: 26px 24px 22px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 130, 205, 0.18);
+    text-align: center;
+    transform: translateY(14px) scale(0.96);
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+  }
+  .note-overlay.open .note-card {
+    transform: translateY(0) scale(1);
+  }
+  .note-badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #ffcae9;
+    background: rgba(255, 160, 220, 0.12);
+    border: 1px solid rgba(255, 180, 225, 0.3);
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  .note-title {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 24px;
+    font-weight: normal;
+    color: #fff2fa;
+    margin: 0 0 14px;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 16px rgba(255, 155, 215, 0.5);
+  }
+  .note-body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 14.5px;
+    line-height: 1.68;
+    color: #ebd4e4;
+    margin: 0 0 18px;
+    font-style: italic;
+  }
+  .note-body strong {
+    color: #ffdf9e;
+    font-weight: normal;
+  }
+  .note-signature {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #dfa8ce;
+    margin-bottom: 20px;
+  }
+  .note-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
 
-#stage {
-  position: relative;
-  width: min(100vw,56.25vh);
-  height: min(100vh,177.7778vw);
-  background: #04020a;
-  overflow: hidden;
-}
-
-canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.hint {
-  position: absolute;
-  top: 7%;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: #f8c9e9;
-  font-size: clamp(30px,6vw,46px);
-  letter-spacing: .2em;
-  text-shadow: 0 0 15px #ed8acb, 0 0 35px #a54b91;
-  opacity: 0;
-  animation: reveal 3s ease forwards;
-  animation-delay: 1s;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.dedication {
-  position: absolute;
-  top: 12%;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: #e8bfdc;
-  font-size: 13px;
-  letter-spacing: .12em;
-  opacity: 0;
-  animation: reveal 3s ease forwards;
-  animation-delay: 3s;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.final-message {
-  position: absolute;
-  bottom: 13%;
-  left: 8%;
-  right: 8%;
-  text-align: center;
-  color: #f5d6e9;
-  font-size: clamp(16px,3.5vw,21px);
-  line-height: 1.7;
-  letter-spacing: .04em;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 2.5s ease, transform 2.5s ease;
-  text-shadow: 0 0 15px #d86bb9;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.final-message.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@keyframes reveal {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: .95; transform: translateY(0); }
-}
-
-.hud {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: max(12px,env(safe-area-inset-bottom));
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  opacity: 0;
-  transition: opacity .25s;
-  z-index: 3;
-}
-
-#stage:hover .hud,
-#stage:focus-within .hud { opacity: 1; }
-
-button {
-  color: #f8eaf3;
-  background: #211629cc;
-  border: 1px solid #8f6688;
-  border-radius: 999px;
-  padding: 9px 15px;
-  font: 500 13px system-ui;
-  cursor: pointer;
-  backdrop-filter: blur(8px);
-}
-
-button:hover { background: #432641; }
-
-@media (hover:none) {
-  .hud { opacity: .85; }
-}
+  @media (hover: none) {
+    .hud { opacity: 0.92; }
+  }
 </style>
 </head>
-
 <body>
-<div id="stage" tabindex="0" aria-label="A magical lily created for Lina">
-
+<div id="stage" tabindex="0" aria-label="Animated pointillism lily for Lylia">
   <canvas id="flower" width="720" height="1280"></canvas>
 
-  <div class="hint">LINA</div>
-  <div class="dedication">A LITTLE FLOWER, JUST FOR YOU ♡</div>
-
-  <div class="final-message" id="finalMessage">
-    Some flowers bloom in gardens,<br>
-    others bloom in someone's heart.<br>
-    <span style="color:#ffb9df">This one is for you, Lina. ♡</span>
+  <div class="header-banner">
+    <div class="hint">A BLOOMING LILY FOR LYLIA</div>
+    <div class="sub-hint" id="statusHint">Touch or drag across the sky to scatter stardust</div>
   </div>
 
-  <div class="hud">
+  <!-- Dedication Card Modal -->
+  <div class="note-overlay" id="noteModal" role="dialog" aria-labelledby="noteTitle" aria-modal="true">
+    <div class="note-card">
+      <span class="note-badge">For Someone Rare</span>
+      <h2 class="note-title" id="noteTitle">Dearest Lylia,</h2>
+      <p class="note-body">
+        Like the <strong>Lily</strong> echoed in your name, you bring a quiet, luminous grace into the world.<br><br>
+        Every single point of light in this bloom was placed one by one—a flower that never fades, unfolding under a sky that writes <strong>Lylia</strong> in the stars just for you.
+      </p>
+      <div class="note-signature">✦ Always Blooming For You ✦</div>
+      <div class="note-actions">
+        <button id="wishFromCard" class="special-btn">✦ Send a Starlight Wish</button>
+        <button id="closeNote">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hud" id="hudBar">
+    <button id="openNote" class="special-btn">💌 For Lylia</button>
+    <button id="wishBtn">✨ Sparkle</button>
     <button id="pause">Pause</button>
     <button id="restart">Restart</button>
     <button id="fullscreen">Fullscreen</button>
@@ -157,375 +246,496 @@ button:hover { background: #432641; }
 
 <script>
 (() => {
-'use strict';
+  'use strict';
+  const W = 720, H = 1280, S = 1, FPS = 60;
+  const T_STEM = 4, T_B0 = 5, T_B1 = 15, BG = '#04020a';
+  const canvas = document.getElementById('flower');
+  const ctx = canvas.getContext('2d', { alpha: false });
 
-const W=720,H=1280;
-const T_STEM=4,T_B0=5,T_B1=15,BG='#04020a';
-const canvas=document.getElementById('flower');
-const ctx=canvas.getContext('2d',{alpha:false});
-
-let t=0,paused=false,last=0;
-let seed=11;
-
-function rand(){
-  seed=(seed*1664525+1013904223)>>>0;
-  return seed/4294967296;
-}
-
-function randn(){
-  return Math.sqrt(-2*Math.log(Math.max(1e-9,rand())))
-  *Math.cos(2*Math.PI*rand());
-}
-
-const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
-const smooth=x=>{x=clamp(x);return x*x*(3-2*x)};
-const lerp=(a,b,x)=>a+(b-a)*x;
-
-const gx=W/2,gy=H*.82,HS=380;
-const dots=[],leaves=[],petals=[],rings=[],dust=[],seeds=[];
-
-function colMix(a,b,x){
-  return a.map((v,i)=>lerp(v,b[i],x));
-}
-
-function stemX(s,time){
-  return gx+30*Math.sin(2.2*s)+10*Math.sin(.9*time)*s*s;
-}
-
-function stemY(s){return gy-s*HS;}
-
-function midrib(L,a0,curl,K=40){
-  const us=[],r=[],h=[];
-  let rr=0,hh=0;
-  us.push(0);r.push(0);h.push(0);
-
-  for(let i=1;i<=K;i++){
-    const u=i/K,a=a0+curl*Math.pow(u,1.6);
-    rr+=Math.sin(a)*L/K;
-    hh+=Math.cos(a)*L/K;
-    us.push(u);r.push(rr);h.push(hh);
+  let t = 0, paused = false, last = 0, raf = 0;
+  let seed = 11;
+  function rand() {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
   }
-  return {us,r,h};
-}
+  function randn() {
+    return Math.sqrt(-2 * Math.log(Math.max(1e-9, rand()))) * Math.cos(2 * Math.PI * rand());
+  }
+  const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+  const smooth = x => { x = clamp(x); return x * x * (3 - 2 * x); };
+  const lerp = (a, b, x) => a + (b - a) * x;
 
-function interp(arr,u){
-  const x=clamp(u)*40;
-  const i=Math.min(39,Math.floor(x)),f=x-i;
-  return lerp(arr[i],arr[i+1],f);
-}
+  const gx = W / 2, gy = H * 0.82, HS = 380;
+  const dots = [], leaves = [], petals = [], rings = [], dust = [], seeds = [];
+  const nameStars = [];      // Pointillism constellation spelling "LYLIA"
+  const interactiveSparks = []; // User touch/click & wish stardust
 
-function drawPoint(x,y,c,a=1,r=1){
-  if(x<0||x>=W||y<0||y>=H)return;
-  ctx.globalAlpha=a;
-  ctx.fillStyle=`rgb(${clamp(c[0],0,255)|0},${clamp(c[1],0,255)|0},${clamp(c[2],0,255)|0})`;
-  ctx.fillRect(x,y,r,r);
-}
-
-function makeData(){
-
-  for(let i=0;i<5000;i++){
-    const dx=(rand()*680-340);
-    const mound=(1-(dx/340)**2)*55;
-    const y=gy-mound*Math.pow(rand(),.5)+randn()*1.5;
-    const c=[lerp(70,140,rand()),lerp(55,100,rand()),lerp(80,120,rand())];
-    dots.push([gx+dx,y,c,.8,1]);
+  function colMix(a, b, x) {
+    return a.map((v, i) => lerp(v, b[i], x));
   }
 
-  for(let i=0;i<3200;i++){
-    const s=rand(),dx=randn()*3.2*(1-.5*s);
-    const c=[lerp(40,120,s),lerp(150,215,s),lerp(95,120,s)];
-    const f=.8+.4*rand();
-    seeds.push({s,dx,c:c.map(v=>v*f)});
+  function addDot(x, y, c, alpha = 1, r = 1) {
+    if (x < 0 || x >= W || y < 0 || y >= H) return;
+    dots.push([x, y, c, alpha, r]);
   }
 
-  for(let i=0;i<4;i++){
-    const s0=[.10,.24,.40,.56][i];
-    const L=[190,175,150,120][i];
-    const side=i%2===0?1:-1;
-    const pts=[];
+  function stemX(s, time) {
+    return gx + 30 * Math.sin(2.2 * s) + 10 * Math.sin(0.9 * time) * s * s;
+  }
+  function stemY(s) {
+    return gy - s * HS;
+  }
 
-    for(let j=0;j<900;j++){
-      const u=Math.pow(rand(),.9),v=rand()*2-1;
-      const prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.8)),.8);
-      let c=[lerp(40,140,u),lerp(160,235,u),lerp(100,140,u)];
-
-      if(Math.abs(v)<.08)c=[190,240,170];
-
-      const f=.8+.4*rand();
-      c=c.map(x=>x*f);
-      pts.push({u,v,prof,c});
+  function midrib(L, a0, curl, K = 40) {
+    const us = [], r = [], h = [];
+    let rr = 0, hh = 0;
+    us.push(0); r.push(0); h.push(0);
+    for (let i = 1; i <= K; i++) {
+      const u = i / K, a = a0 + curl * Math.pow(u, 1.6);
+      rr += Math.sin(a) * L / K;
+      hh += Math.cos(a) * L / K;
+      us.push(u); r.push(rr); h.push(hh);
     }
-    leaves.push({s0,L,side,pts});
+    return { us, r, h };
   }
 
-  for(let k=0;k<6;k++){
-    const outer=k%2===0,pts=[];
+  function interp(arr, u) {
+    const x = clamp(u) * 40, i = Math.min(39, Math.floor(x)), f = x - i;
+    return lerp(arr[i], arr[i + 1], f);
+  }
 
-    for(let j=0;j<2300;j++){
-      const u=Math.pow(rand(),.85),v=rand()*2-1;
-      const prof=Math.pow(Math.sin(Math.PI*Math.pow(u,.7)),.9);
+  // Generate pointillism star targets spelling "LYLIA" and "for you" in the night sky
+  function makeLyliaConstellation() {
+    const off = document.createElement('canvas');
+    off.width = W;
+    off.height = 320;
+    const octx = off.getContext('2d');
 
-      let c=[lerp(205,255,u),lerp(40,195,u),lerp(125,228,u)];
+    octx.fillStyle = '#000';
+    octx.fillRect(0, 0, off.width, off.height);
 
-      if(Math.abs(v)<.07&&u<.55)c=[235,225,150];
-      else if(rand()<.10&&u<.6&&Math.abs(v)<.75)c=[140,15,80];
+    // Main "LYLIA" constellation title
+    octx.fillStyle = '#fff';
+    octx.textAlign = 'center';
+    octx.textBaseline = 'middle';
+    octx.font = '600 92px Georgia, "Times New Roman", serif';
+    octx.fillText('L Y L I A', W / 2, 155);
 
-      if(Math.abs(v)>.88)c=c.map(x=>x*1.08);
-
-      const f=.82+.35*rand();
-      c=c.map(x=>x*f);
-      pts.push({u,v,prof,c});
+    const img = octx.getImageData(0, 0, off.width, off.height).data;
+    const candidates = [];
+    for (let y = 60; y < 250; y += 3) {
+      for (let x = 60; x < W - 60; x += 3) {
+        const idx = (y * off.width + x) * 4;
+        if (img[idx] > 128) {
+          candidates.push({ x, y });
+        }
+      }
     }
 
-    petals.push({
-      phi:(k*60+8)*Math.PI/180,
-      L:outer?300:280,
-      Wm:outer?64:72,
-      ac:outer?.10:.05,
-      ao:outer?1.05:.82,
-      curl:outer?.95:.75,
-      pts
-    });
+    // Sample pointillism dots from the glyph mask using our seeded PRNG
+    for (let i = 0; i < candidates.length; i++) {
+      const pt = candidates[i];
+      if (rand() < 0.62) {
+        const isGold = rand() < 0.35;
+        const c = isGold
+          ? [255, lerp(215, 248, rand()), lerp(140, 195, rand())]
+          : [255, lerp(165, 225, rand()), lerp(215, 248, rand())];
+        nameStars.push({
+          tx: pt.x + randn() * 0.9,
+          ty: pt.y + randn() * 0.9,
+          sx: gx + randn() * 140,
+          sy: gy - HS - 40 + randn() * 60,
+          c,
+          ph: rand() * 6.28,
+          delay: (pt.x / W) * 2.2 + rand() * 0.9,
+          sz: rand() < 0.18 ? 3 : 2
+        });
+      }
+    }
   }
 
-  for(let i=0;i<1100;i++)rings.push(rand()*Math.PI*2);
+  function makeData() {
+    // 1. Soil mound pointillism (exact seed sequence preserved)
+    for (let i = 0; i < 5000; i++) {
+      const dx = (rand() * 680 - 340), mound = (1 - (dx / 340) ** 2) * 55;
+      const y = gy - mound * Math.pow(rand(), 0.5) + randn() * 1.5;
+      const c = [lerp(70, 140, rand()), lerp(55, 100, rand()), lerp(80, 120, rand())];
+      dots.push([gx + dx, y, c, 0.8, 1]);
+    }
+    // 2. Stem seeds
+    for (let i = 0; i < 3200; i++) {
+      const s = rand(), dx = randn() * 3.2 * (1 - 0.5 * s);
+      const c = [lerp(40, 120, s), lerp(150, 215, s), lerp(95, 120, s)];
+      const f = 0.8 + 0.4 * rand();
+      seeds.push({ s, dx, c: c.map(v => v * f) });
+    }
+    // 3. Four Leaves
+    for (let i = 0; i < 4; i++) {
+      const s0 = [0.10, 0.24, 0.40, 0.56][i], L = [190, 175, 150, 120][i], side = i % 2 === 0 ? 1 : -1;
+      const pts = [];
+      for (let j = 0; j < 900; j++) {
+        const u = Math.pow(rand(), 0.9), v = rand() * 2 - 1, prof = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.8)), 0.8);
+        let c = [lerp(40, 140, u), lerp(160, 235, u), lerp(100, 140, u)];
+        if (Math.abs(v) < 0.08) c = [190, 240, 170];
+        const f = 0.8 + 0.4 * rand();
+        c = c.map(x => x * f);
+        pts.push({ u, v, prof, c });
+      }
+      leaves.push({ s0, L, side, pts });
+    }
+    // 4. Six 3D Blooming Lily Petals
+    for (let k = 0; k < 6; k++) {
+      const outer = k % 2 === 0, pts = [];
+      for (let j = 0; j < 2300; j++) {
+        const u = Math.pow(rand(), 0.85), v = rand() * 2 - 1, prof = Math.pow(Math.sin(Math.PI * Math.pow(u, 0.7)), 0.9);
+        let c = [lerp(205, 255, u), lerp(40, 195, u), lerp(125, 228, u)];
+        if (Math.abs(v) < 0.07 && u < 0.55) c = [235, 225, 150];
+        else if (rand() < 0.10 && u < 0.6 && Math.abs(v) < 0.75) c = [140, 15, 80];
+        if (Math.abs(v) > 0.88) c = c.map(x => x * 1.08);
+        const f = 0.82 + 0.35 * rand();
+        c = c.map(x => x * f);
+        pts.push({ u, v, prof, c });
+      }
+      petals.push({
+        phi: (k * 60 + 8) * Math.PI / 180,
+        L: outer ? 300 : 280,
+        Wm: outer ? 64 : 72,
+        ac: outer ? 0.10 : 0.05,
+        ao: outer ? 1.05 : 0.82,
+        curl: outer ? 0.95 : 0.75,
+        pts
+      });
+    }
+    // 5. Rings, Dust & Floating Pollen
+    for (let i = 0; i < 1100; i++) rings.push(rand() * Math.PI * 2);
+    for (let k = 0; k < 6; k++) {
+      const a = [];
+      for (let i = 0; i < 260; i++) a.push(rand() * Math.PI * 2);
+      seeds.push({ ringAngles: a });
+    }
+    for (let i = 0; i < 450; i++) {
+      dust.push({ x: rand() * W, y: rand() * H, s: lerp(6, 22, rand()), ph: rand() * 6.28, f: lerp(1, 4, rand()) });
+    }
+    for (let i = 0; i < 140; i++) {
+      seeds.push({ float: true, off: rand(), ph: rand() * 6.28, dr: lerp(-80, 80, rand()), sp: lerp(0.05, 0.12, rand()) });
+    }
 
-  for(let k=0;k<6;k++){
-    const a=[];
-    for(let i=0;i<260;i++)a.push(rand()*Math.PI*2);
-    seeds.push({ringAngles:a});
+    // 6. Generate "LYLIA" Starry Sky Pointillism Constellation
+    makeLyliaConstellation();
   }
 
-  for(let i=0;i<450;i++){
-    dust.push({
-      x:rand()*W,
-      y:rand()*H,
-      s:lerp(6,22,rand()),
-      ph:rand()*6.28,
-      f:lerp(1,4,rand())
-    });
+  function spawnSparkles(x, y, count = 18) {
+    for (let i = 0; i < count; i++) {
+      const ang = Math.random() * Math.PI * 2;
+      const spd = 12 + Math.random() * 55;
+      const isWarm = Math.random() < 0.45;
+      interactiveSparks.push({
+        x: x + (Math.random() - 0.5) * 14,
+        y: y + (Math.random() - 0.5) * 14,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd - 22,
+        age: 0,
+        life: 1.1 + Math.random() * 1.1,
+        c: isWarm ? [255, 220, 135] : [255, 165, 225],
+        r: Math.random() < 0.35 ? 3 : 2
+      });
+    }
   }
 
-  for(let i=0;i<140;i++){
-    seeds.push({
-      float:true,
-      off:rand(),
-      ph:rand()*6.28,
-      dr:lerp(-80,80,rand()),
-      sp:lerp(.05,.12,rand())
-    });
-  }
-}
-
-function render(time){
-
-  ctx.fillStyle=BG;
-  ctx.fillRect(0,0,W,H);
-
-  for(const d of dust){
-    const tw=.35+.65*(Math.sin(time*d.f+d.ph)>.2?1:0);
-    const y=(d.y-time*d.s)%H;
-    drawPoint(d.x,y,[255,200,235],.28*tw,1);
+  function triggerWishBurst() {
+    const hx = stemX(1, t), hy = stemY(1) - 70;
+    spawnSparkles(hx, hy, 55);
+    spawnSparkles(W / 2, 155, 45);
   }
 
-  const g=smooth(time/T_STEM);
-  const e=smooth((time-T_B0)/(T_B1-T_B0));
-  const rev=smooth((time-T_STEM+.3)/1.6);
+  function drawPoint(x, y, c, a = 1, r = 1) {
+    if (x < 0 || x >= W || y < 0 || y >= H) return;
+    ctx.globalAlpha = a;
+    ctx.fillStyle = `rgb(${clamp(c[0], 0, 255) | 0},${clamp(c[1], 0, 255) | 0},${clamp(c[2], 0, 255) | 0})`;
+    ctx.fillRect(x, y, r, r);
+  }
 
-  const hx=stemX(1,time),hy=stemY(1);
+  function render(time, dt = 0.016) {
+    ctx.fillStyle = BG;
+    ctx.fillRect(0, 0, W, H);
 
-  const ha=smooth((time-T_B0+1.5)/4)*.9;
+    // Subtle drifting stars
+    for (const d of dust) {
+      const tw = 0.35 + 0.65 * (Math.sin(time * d.f + d.ph) > 0.2 ? 1 : 0);
+      const y = ((d.y - time * d.s) % H + H) % H;
+      drawPoint(d.x, y, [255, 200, 235], 0.28 * tw, 1);
+    }
 
-  if(ha>.01){
-    const cx=hx,cy=hy-90,R=300,rot=time*.12;
-    ctx.save();
-    ctx.globalAlpha=ha*.45;
-    ctx.strokeStyle='#ffbede';
-    ctx.lineWidth=1;
-    ctx.setLineDash([2,7]);
-    ctx.beginPath();
-    ctx.arc(cx,cy,R,0,Math.PI*2);
-    ctx.stroke();
+    const g = smooth(time / T_STEM);
+    const e = smooth((time - T_B0) / (T_B1 - T_B0));
+    const rev = smooth((time - T_STEM + 0.3) / 1.6);
+    const hx = stemX(1, time), hy = stemY(1);
 
-    for(let k=0;k<6;k++){
-      const ca=rot*1.3+k*Math.PI/3;
-      const ox=cx+R*Math.cos(ca),oy=cy+R*Math.sin(ca);
+    // Magical orbital rings
+    const ha = smooth((time - T_B0 + 1.5) / 4) * 0.9;
+    if (ha > 0.01) {
+      const cx = hx, cy = hy - 90, R = 300, rot = time * 0.12;
+      ctx.save();
+      ctx.globalAlpha = ha * 0.45;
+      ctx.strokeStyle = '#ffbede';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 7]);
       ctx.beginPath();
-      ctx.arc(ox,oy,R*.5,0,Math.PI*2);
+      ctx.arc(cx, cy, R, 0, Math.PI * 2);
       ctx.stroke();
+      for (let k = 0; k < 6; k++) {
+        const ca = rot * 1.3 + k * Math.PI / 3;
+        const ox = cx + R * Math.cos(ca), oy = cy + R * Math.sin(ca);
+        ctx.beginPath();
+        ctx.arc(ox, oy, R * 0.5, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.restore();
     }
+
+    // "LYLIA" Pointillism Star Constellation emerging as the Lily blooms
+    if (time > 7.5) {
+      const nameMaster = smooth((time - 7.5) / 5.5);
+      // Subtle framing arc above LYLIA
+      if (nameMaster > 0.2) {
+        ctx.save();
+        ctx.globalAlpha = (nameMaster - 0.2) * 0.32;
+        ctx.strokeStyle = '#f8c8e6';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([1, 8]);
+        ctx.beginPath();
+        ctx.arc(W / 2, 265, 240, Math.PI * 1.15, Math.PI * 1.85);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      for (let i = 0; i < nameStars.length; i++) {
+        const st = nameStars[i];
+        const loc = smooth((time - 7.5 - st.delay) / 3.2);
+        if (loc <= 0.01) continue;
+        // Rise gracefully from the lily crown into the night sky constellation
+        const arcX = Math.sin(loc * Math.PI) * 28 * Math.sin(st.ph);
+        const x = lerp(st.sx, st.tx, loc) + arcX + Math.sin(time * 1.4 + st.ph) * 0.65 * loc;
+        const y = lerp(st.sy, st.ty, loc) + Math.cos(time * 1.2 + st.ph) * 0.65 * loc;
+        const twinkle = 0.62 + 0.38 * Math.sin(time * 3.1 + st.ph);
+        drawPoint(x, y, st.c, loc * twinkle * 0.92, st.sz);
+      }
+    }
+
+    // Soil pointillism
+    for (let i = 0; i < 5000; i++) {
+      const p = dots[i];
+      drawPoint(p[0], p[1], p[2], p[3], 1);
+    }
+
+    // Stem
+    for (const q of seeds) {
+      if (q.s !== undefined && q.s <= g) {
+        drawPoint(stemX(q.s, time) + q.dx, stemY(q.s), q.c, 0.9, 2);
+      }
+    }
+
+    // Leaves
+    for (const lf of leaves) {
+      const lg = clamp((g - lf.s0) * 2.5);
+      if (lg <= 0.01) continue;
+      const L = lf.L * lg, m = midrib(L, 0.85, 1.1);
+      const bx = stemX(lf.s0, time), by = stemY(lf.s0), sway = Math.sin(time * 1.2 + lf.s0 * 5) * 0.03;
+      for (const p of lf.pts) {
+        const rr = interp(m.r, p.u), hh = interp(m.h, p.u);
+        const wid = 15 * Math.pow(Math.sin(Math.PI * Math.pow(p.u, 0.8)), 0.8) * lg;
+        const x = bx + lf.side * (rr + p.v * wid * 0.35) + sway * hh * lf.side;
+        const y = by - hh + p.v * wid;
+        drawPoint(x, y, p.c, 0.95, 2);
+      }
+    }
+
+    // Blooming petals
+    if (rev > 0.01) {
+      const psi = 0.25 + time * 0.22, tau = 0.5;
+      const cp = Math.cos(psi), sp = Math.sin(psi), ct = Math.cos(tau), st = Math.sin(tau);
+      const swayT = Math.sin(time * 0.8) * 0.02;
+      for (const p of petals) {
+        const Ls = p.L * (0.45 + 0.55 * e) * (0.35 + 0.65 * rev);
+        const a0 = lerp(p.ac, p.ao, e), curl = (0.12 + 0.88 * e) * p.curl;
+        const m = midrib(Ls, a0, curl);
+        for (const d of p.pts) {
+          if (d.u > rev) continue;
+          const rr = interp(m.r, d.u), hh = interp(m.h, d.u);
+          const wid = p.Wm * (0.55 + 0.45 * e) * d.prof * (0.35 + 0.65 * rev), ph = p.phi;
+          const X = rr * Math.cos(ph) - d.v * wid * Math.sin(ph);
+          const Z = rr * Math.sin(ph) + d.v * wid * Math.cos(ph);
+          const Y = hh + d.v * d.v * wid * (0.30 * (1 - e) - 0.25 * e);
+          const Xp = X * cp + Z * sp, Zp = -X * sp + Z * cp, sy = Y * ct - Zp * st;
+          const shade = 0.55 + 0.45 * clamp(Zp / p.L * 0.8 + 0.5);
+          const tint = (1 - e) * clamp(d.u * 1.3) * 0.6;
+          const c = colMix(d.c, [135, 205, 125], tint).map(v => v * shade);
+          drawPoint(hx + Xp + swayT * sy, hy - sy, c, 0.96, 2);
+        }
+      }
+
+      // Warm center stamens
+      if (e > 0.28) {
+        const sr = smooth((e - 0.28) / 0.4);
+        for (let k = 0; k < 6; k++) {
+          const ph = (k * 60 + 38) * Math.PI / 180, Ls = 215 * (0.4 + 0.6 * e) * sr;
+          const m = midrib(Ls, lerp(0.15, 0.62, e), 0.55 * e);
+          for (let j = 0; j < 45; j++) {
+            const u = rand(), rr = interp(m.r, u), hh = interp(m.h, u);
+            const X = rr * Math.cos(ph), Z = rr * Math.sin(ph);
+            const Xp = X * cp + Z * sp, Zp = -X * sp + Z * cp, sy = hh * ct - Zp * st;
+            drawPoint(hx + Xp, hy - sy, [245, 235, 200], 0.95, 2);
+          }
+          const rr = m.r[40], hh = m.h[40];
+          const X = rr * Math.cos(ph), Z = rr * Math.sin(ph);
+          const Xp = X * cp + Z * sp, Zp = -X * sp + Z * cp, sy = hh * ct - Zp * st;
+          for (let j = 0; j < 35; j++) {
+            drawPoint(hx + Xp + randn() * 5, hy - sy + randn() * 3, [255, 150, 40], 0.95, 2);
+          }
+        }
+      }
+
+      // Floating pollen
+      if (e > 0.6) {
+        const fa = smooth((e - 0.6) / 0.4);
+        for (const q of seeds) {
+          if (!q.float) continue;
+          const v = (time * q.sp + q.off) % 1;
+          const x = hx + q.dr * v + Math.sin(v * 7 + q.ph) * 25;
+          const y = (hy - 110) + v * (gy - hy + 90);
+          const fade = (1 - v) * fa;
+          drawPoint(x, y, q.ph > 3.1 ? [255, 190, 80] : [255, 150, 205], fade, 2);
+        }
+      }
+    }
+
+    // Interactive touch/mouse stardust particles
+    for (let i = interactiveSparks.length - 1; i >= 0; i--) {
+      const sp = interactiveSparks[i];
+      sp.age += dt;
+      if (sp.age >= sp.life) {
+        interactiveSparks.splice(i, 1);
+        continue;
+      }
+      sp.x += sp.vx * dt + Math.sin(time * 5 + i) * 0.35;
+      sp.y += sp.vy * dt;
+      sp.vy -= 12 * dt; // gentle upward float toward Lylia's constellation
+      const alpha = 1 - sp.age / sp.life;
+      drawPoint(sp.x, sp.y, sp.c, alpha * 0.95, sp.r);
+    }
+
+    // Soft bloom glow
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.globalAlpha = 0.18;
+    ctx.filter = 'blur(12px)';
+    ctx.drawImage(canvas, 0, 0);
     ctx.restore();
+    ctx.globalAlpha = 1;
   }
 
-  for(let i=0;i<5000;i++){
-    const p=dots[i];
-    drawPoint(p[0],p[1],p[2],p[3],1);
-  }
-
-  for(const q of seeds){
-    if(q.s!==undefined&&q.s<=g){
-      drawPoint(stemX(q.s,time)+q.dx,stemY(q.s),q.c,.9,2);
+  function frame(now) {
+    const dt = Math.min((now - last) / 1000, 0.05);
+    if (!paused) {
+      t += dt;
     }
+    last = now;
+    render(t, dt);
+    raf = requestAnimationFrame(frame);
   }
 
-  for(const lf of leaves){
-    const lg=clamp((g-lf.s0)*2.5);
-    if(lg<=.01)continue;
+  makeData();
+  render(0);
+  last = performance.now();
+  raf = requestAnimationFrame(frame);
 
-    const L=lf.L*lg,m=midrib(L,.85,1.1);
-    const bx=stemX(lf.s0,time),by=stemY(lf.s0);
-    const sway=Math.sin(time*1.2+lf.s0*5)*.03;
+  // Canvas pointer interaction (scatter stardust for Lylia)
+  function getCanvasCoords(e) {
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: ((clientX - rect.left) / rect.width) * W,
+      y: ((clientY - rect.top) / rect.height) * H
+    };
+  }
 
-    for(const p of lf.pts){
-      const rr=interp(m.r,p.u),hh=interp(m.h,p.u);
-      const wid=15*Math.pow(Math.sin(Math.PI*Math.pow(p.u,.8)),.8)*lg;
-      const x=bx+lf.side*(rr+p.v*wid*.35)+sway*hh*lf.side;
-      const y=by-hh+p.v*wid;
-      drawPoint(x,y,p.c,.95,2);
+  let isPointerDown = false;
+  canvas.addEventListener('pointerdown', e => {
+    isPointerDown = true;
+    const pt = getCanvasCoords(e);
+    spawnSparkles(pt.x, pt.y, 22);
+  });
+  canvas.addEventListener('pointermove', e => {
+    if (!isPointerDown && Math.random() > 0.35) return;
+    const pt = getCanvasCoords(e);
+    spawnSparkles(pt.x, pt.y, isPointerDown ? 5 : 2);
+  });
+  window.addEventListener('pointerup', () => { isPointerDown = false; });
+
+  // UI Controls
+  const pauseBtn = document.getElementById('pause');
+  const noteModal = document.getElementById('noteModal');
+
+  pauseBtn.addEventListener('click', () => {
+    paused = !paused;
+    pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  });
+
+  document.getElementById('restart').addEventListener('click', () => {
+    t = 0;
+    paused = false;
+    pauseBtn.textContent = 'Pause';
+    triggerWishBurst();
+  });
+
+  document.getElementById('wishBtn').addEventListener('click', () => {
+    triggerWishBurst();
+  });
+
+  document.getElementById('openNote').addEventListener('click', () => {
+    noteModal.classList.add('open');
+    triggerWishBurst();
+  });
+
+  document.getElementById('closeNote').addEventListener('click', () => {
+    noteModal.classList.remove('open');
+  });
+
+  document.getElementById('wishFromCard').addEventListener('click', () => {
+    noteModal.classList.remove('open');
+    triggerWishBurst();
+  });
+
+  noteModal.addEventListener('click', e => {
+    if (e.target === noteModal) noteModal.classList.remove('open');
+  });
+
+  document.getElementById('fullscreen').addEventListener('click', () => {
+    const el = document.getElementById('stage');
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      paused = !paused;
+      pauseBtn.textContent = paused ? 'Resume' : 'Pause';
     }
-  }
-
-  if(rev>.01){
-
-    const psi=.25+time*.22;
-    const tau=.5;
-    const cp=Math.cos(psi),sp=Math.sin(psi);
-    const ct=Math.cos(tau),st=Math.sin(tau);
-    const swayT=Math.sin(time*.8)*.02;
-
-    for(const p of petals){
-      const Ls=p.L*(.45+.55*e)*(.35+.65*rev);
-      const a0=lerp(p.ac,p.ao,e);
-      const curl=(.12+.88*e)*p.curl;
-      const m=midrib(Ls,a0,curl);
-
-      for(const d of p.pts){
-        if(d.u>rev)continue;
-
-        const rr=interp(m.r,d.u),hh=interp(m.h,d.u);
-        const wid=p.Wm*(.55+.45*e)*d.prof*(.35+.65*rev);
-        const ph=p.phi;
-
-        const X=rr*Math.cos(ph)-d.v*wid*Math.sin(ph);
-        const Z=rr*Math.sin(ph)+d.v*wid*Math.cos(ph);
-        const Y=hh+d.v*d.v*wid*(.30*(1-e)-.25*e);
-
-        const Xp=X*cp+Z*sp;
-        const Zp=-X*sp+Z*cp;
-        const sy=Y*ct-Zp*st;
-
-        const shade=.55+.45*clamp(Zp/p.L*.8+.5);
-        const tint=(1-e)*clamp(d.u*1.3)*.6;
-        const c=colMix(d.c,[135,205,125],tint).map(v=>v*shade);
-
-        drawPoint(hx+Xp+swayT*sy,hy-sy,c,.96,2);
+    if (e.key.toLowerCase() === 'r') {
+      t = 0;
+      paused = false;
+      pauseBtn.textContent = 'Pause';
+    }
+    if (e.key === 'Escape') {
+      if (noteModal.classList.contains('open')) {
+        noteModal.classList.remove('open');
+      } else if (document.fullscreenElement) {
+        document.exitFullscreen?.();
       }
     }
-
-    if(e>.28){
-      const sr=smooth((e-.28)/.4);
-
-      for(let k=0;k<6;k++){
-        const ph=(k*60+38)*Math.PI/180;
-        const Ls=215*(.4+.6*e)*sr;
-        const m=midrib(Ls,lerp(.15,.62,e),.55*e);
-
-        for(let j=0;j<45;j++){
-          const u=rand();
-          const rr=interp(m.r,u),hh=interp(m.h,u);
-          const X=rr*Math.cos(ph),Z=rr*Math.sin(ph);
-          const Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp;
-          const sy=hh*ct-Zp*st;
-          drawPoint(hx+Xp,hy-sy,[245,235,200],.95,2);
-        }
-
-        const rr=m.r[40],hh=m.h[40];
-        const X=rr*Math.cos(ph),Z=rr*Math.sin(ph);
-        const Xp=X*cp+Z*sp,Zp=-X*sp+Z*cp;
-        const sy=hh*ct-Zp*st;
-
-        for(let j=0;j<35;j++){
-          drawPoint(hx+Xp+randn()*5,hy-sy+randn()*3,[255,150,40],.95,2);
-        }
-      }
-    }
-
-    if(e>.6){
-      const fa=smooth((e-.6)/.4);
-
-      for(const q of seeds){
-        if(!q.float)continue;
-        const v=(time*q.sp+q.off)%1;
-        const x=hx+q.dr*v+Math.sin(v*7+q.ph)*25;
-        const y=(hy-110)+v*(gy-hy+90);
-        const fade=(1-v)*fa;
-        drawPoint(x,y,q.ph>3.1?[255,190,80]:[255,150,205],fade,2);
-      }
-    }
-  }
-
-  // Soft glow
-  ctx.save();
-  ctx.globalCompositeOperation='screen';
-  ctx.globalAlpha=.18;
-  ctx.filter='blur(12px)';
-  ctx.drawImage(canvas,0,0);
-  ctx.restore();
-
-  ctx.globalAlpha=1;
-
-  // Show final dedication after the lily blooms
-  document.getElementById('finalMessage').classList.toggle('show',time>19);
-}
-
-function frame(now){
-  if(!paused){
-    const dt=Math.min((now-last)/1000,.05);
-    t+=dt;
-  }
-  last=now;
-  render(t);
-  requestAnimationFrame(frame);
-}
-
-makeData();
-render(0);
-last=performance.now();
-requestAnimationFrame(frame);
-
-document.getElementById('pause').addEventListener('click',()=>{
-  paused=!paused;
-  document.getElementById('pause').textContent=paused?'Resume':'Pause';
-});
-
-document.getElementById('restart').addEventListener('click',()=>{
-  t=0;
-  document.getElementById('finalMessage').classList.remove('show');
-});
-
-document.getElementById('fullscreen').addEventListener('click',()=>{
-  const el=document.getElementById('stage');
-  if(!document.fullscreenElement)el.requestFullscreen?.();
-  else document.exitFullscreen?.();
-});
-
-document.addEventListener('keydown',e=>{
-  if(e.code==='Space'){
-    e.preventDefault();
-    paused=!paused;
-    document.getElementById('pause').textContent=paused?'Resume':'Pause';
-  }
-
-  if(e.key.toLowerCase()==='r'){
-    t=0;
-    document.getElementById('finalMessage').classList.remove('show');
-  }
-
-  if(e.key==='Escape'&&document.fullscreenElement){
-    document.exitFullscreen?.();
-  }
-});
-
+  });
 })();
 </script>
 </body>
