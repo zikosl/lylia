@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>For Lylia</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Google Fonts: Cormorant Garamond & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0a090d;
+      --pearl: #F6F3EE;
+      --rose-gold: #E6B8A2;
+      --muted: #9A949C;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg);
+      color: var(--pearl);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-serif-editorial {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    /* Full-bleed WebGL Canvas */
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      touch-action: none;
+      cursor: pointer;
+    }
+
+    /* Subtle Ambient Radial Glow */
+    #ambient-glow {
+      position: fixed;
+      top: 44%;
+      left: 50%;
+      width: 340px;
+      height: 340px;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(212, 72, 106, 0.16) 0%, rgba(230, 184, 162, 0.05) 50%, transparent 72%);
+      filter: blur(45px);
+      pointer-events: none;
+      z-index: 0;
+      transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* Smooth Text Transitions */
+    .fade-text {
+      transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .text-hidden {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .text-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Minimal Pill Buttons */
+    .pill-primary {
+      background: rgba(230, 184, 162, 0.14);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(230, 184, 162, 0.5);
+      color: var(--pearl);
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pill-primary:hover, .pill-primary:active {
+      background: var(--pearl);
+      color: var(--bg);
+      border-color: var(--pearl);
+      box-shadow: 0 0 30px rgba(230, 184, 162, 0.35);
+    }
+
+    .pill-secondary {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--muted);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease;
+    }
+
+    .safe-top { padding-top: max(2rem, env(safe-area-inset-top)); }
+    .safe-bottom { padding-bottom: max(2.25rem, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body class="relative flex justify-center items-center">
+
+  <!-- Soft Backlight Glow -->
+  <div id="ambient-glow"></div>
+
+  <!-- Interactive 3D Centerpiece -->
+  <div id="canvas-container" aria-label="Interactive 3D Crystal Heart for Lylia"></div>
+
+  <!-- Ultra-Minimal Mobile Overlay -->
+  <main class="relative z-10 w-full max-w-[400px] h-full flex flex-col justify-between items-center px-6 safe-top safe-bottom pointer-events-none text-center">
+
+    <!-- Top Whisper Header -->
+    <header class="mt-2">
+      <p class="text-[11px] tracking-[0.28em] uppercase text-[#E6B8A2]/80 font-light">
+        For Lylia
+      </p>
+    </header>
+
+    <!-- Center Spacer for 3D Heart -->
+    <div class="flex-1"></div>
+
+    <!-- Bottom Interactive Area -->
+    <footer class="w-full flex flex-col items-center pointer-events-auto min-h-[155px] justify-end">
+
+      <!-- Dynamic Poetic Line -->
+      <h1 id="message-text" class="font-serif-editorial text-3xl sm:text-4xl font-normal italic text-[#F6F3EE] leading-snug mb-6 max-w-[320px] fade-text text-visible">
+        Tap the crystal
+      </h1>
+
+      <!-- State 0, 1, 2: Single Minimal Continue / Tap Pill -->
+      <div id="tap-prompt-wrap" class=" flex flex-col items-center gap-3">
+        <button id="next-pill-btn" onclick="advanceStep()"
+          class="pill-primary px-8 py-3.5 rounded-full text-xs tracking-[0.2em] uppercase font-normal">
+          Touch Crystal
+        </button>
+        <div id="step-dots" class="flex items-center gap-2 mt-1 opacity-50">
+          <span id="dot-1" class="w-1.5 h-1.5 rounded-full bg-white/25 transition-all duration-300"></span>
+          <span id="dot-2" class="w-1.5 h-1.5 rounded-full bg-white/25 transition-all duration-300"></span>
+          <span id="dot-3" class="w-1.5 h-1.5 rounded-full bg-white/25 transition-all duration-300"></span>
+        </div>
+      </div>
+
+      <!-- State 3: Final Question Buttons ("Yes ✨" / Playful "No") -->
+      <div id="question-actions" class="hidden w-full flex items-center justify-center gap-3 relative min-h-[52px]">
+        <button onclick="triggerCelebration()"
+          class="pill-primary px-9 py-3.5 rounded-full text-xs tracking-[0.18em] uppercase font-medium z-10">
+          Yes ✨
+        </button>
+        <button id="no-btn"
+          class="pill-secondary px-7 py-3.5 rounded-full text-xs tracking-[0.16em] uppercase font-normal">
+          No
+        </button>
+      </div>
+
+      <!-- State 4: Celebration Replay Link -->
+      <div id="replay-wrap" class="hidden flex flex-col items-center">
+        <p class="text-xs text-[#E6B8A2] tracking-[0.14em] uppercase font-light mb-4">
+          waiting for you
+        </p>
+        <button onclick="resetExperience()"
+          class="text-[11px] tracking-[0.22em] uppercase text-[#9A949C] hover:text-[#F6F3EE] transition-colors py-1">
+          Replay
+        </button>
+      </div>
+
+    </footer>
+  </main>
+
+  <script>
+    // =========================================================
+    // 1. SIMPLE 3-TAP FLOW STATE
+    // =========================================================
+    let step = 0; // 0: Initial, 1: Tap 1, 2: Tap 2, 3: Tap 3 (Question), 4: Celebration
+    const notes = [
+      "Tap the crystal",
+      "Every day feels lighter with you.",
+      "You are my favorite part of everything.",
+      "Lylia, will we have a chance?",
+      "It's a date, Lylia ♥"
+    ];
+
+    const messageEl = document.getElementById('message-text');
+    const tapPromptWrap = document.getElementById('tap-prompt-wrap');
+    const nextPillBtn = document.getElementById('next-pill-btn');
+    const questionActions = document.getElementById('question-actions');
+    const replayWrap = document.getElementById('replay-wrap');
+    const ambientGlow = document.getElementById('ambient-glow');
+
+    // =========================================================
+    // 2. SUBTLE SYNTHESIZED WEB AUDIO CHIME (NO EXTERNAL FILES)
+    // =========================================================
+    let audioCtx = null;
+
+    function playWarmChime(freqs = [523.25], duration = 2.0) {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx) audioCtx = new AudioContextClass();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        freqs.forEach((freq, idx) => {
+          const now = audioCtx.currentTime + idx * 0.08;
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          gain.gain.setValueAtTime(0.0001, now);
+          gain.gain.exponentialRampToValueAtTime(0.045, now + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(now);
+          osc.stop(now + duration + 0.05);
+        });
+      } catch (e) {
+        // Ignore audio errors if blocked by browser
+      }
+    }
+
+    // =========================================================
+    // 3. UI FLOW & STEP TRANSITIONS
+    // =========================================================
+    function updateDots() {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`dot-${i}`);
+        if (i <= step) {
+          dot.className = 'w-4 h-1.5 rounded-full bg-[#E6B8A2] transition-all duration-300';
+        } else {
+          dot.className = 'w-1.5 h-1.5 rounded-full bg-white/25 transition-all duration-300';
+        }
+      }
+    }
+
+    function setNoteText(text) {
+      messageEl.classList.remove('text-visible');
+      messageEl.classList.add('text-hidden');
+
+      setTimeout(() => {
+        messageEl.textContent = text;
+        messageEl.classList.remove('text-hidden');
+        messageEl.classList.add('text-visible');
+      }, 240);
+    }
+
+    function advanceStep() {
+      if (step >= 3) return;
+      step++;
+
+      // Pulse & spin the 3D crystal
+      pulseScale = 1.26;
+      spinBoost = 0.16;
+
+      // Subtle ascending bell tones on each tap
+      const stepTones = [
+        [523.25, 659.25],         // Tap 1
+        [587.33, 783.99],         // Tap 2
+        [659.25, 783.99, 1046.50] // Tap 3
+      ];
+      playWarmChime(stepTones[step - 1] || [523.25]);
+
+      setNoteText(notes[step]);
+      updateDots();
+
+      if (step === 1 || step === 2) {
+        nextPillBtn.textContent = "Tap Again";
+      } else if (step === 3) {
+        tapPromptWrap.classList.add('hidden');
+        questionActions.classList.remove('hidden');
+      }
+    }
+
+    function triggerCelebration() {
+      step = 4;
+      pulseScale = 1.42;
+      spinBoost = 0.28;
+      bloomFactor = 1.5;
+
+      // Joyful warm chord
+      playWarmChime([523.25, 659.25, 783.99, 1046.50, 1318.51], 2.8);
+
+      // Warm golden-pink ambient bloom
+      ambientGlow.style.width = '440px';
+      ambientGlow.style.height = '440px';
+      ambientGlow.style.background = 'radial-gradient(circle, rgba(230, 184, 162, 0.32) 0%, rgba(212, 72, 106, 0.22) 48%, transparent 72%)';
+
+      // Change crystal emissive glow to warm golden-rose
+      if (heartMesh) {
+        heartMesh.material.emissive.setHex(0x7a1c34);
+        heartMesh.material.emissiveIntensity = 0.75;
+      }
+
+      setNoteText(notes[4]);
+      questionActions.classList.add('hidden');
+      replayWrap.classList.remove('hidden');
+    }
+
+    function resetExperience() {
+      step = 0;
+      bloomFactor = 0;
+      pulseScale = 1.15;
+      spinBoost = 0.1;
+
+      if (heartMesh) {
+        heartMesh.material.emissive.setHex(0x3a0814);
+        heartMesh.material.emissiveIntensity = 0.4;
+      }
+
+      ambientGlow.style.width = '340px';
+      ambientGlow.style.height = '340px';
+      ambientGlow.style.background = 'radial-gradient(circle, rgba(212, 72, 106, 0.16) 0%, rgba(230, 184, 162, 0.05) 50%, transparent 72%)';
+
+      const noBtn = document.getElementById('no-btn');
+      noBtn.style.transform = 'translate3d(0, 0, 0)';
+
+      nextPillBtn.textContent = "Touch Crystal";
+      replayWrap.classList.add('hidden');
+      questionActions.classList.add('hidden');
+      tapPromptWrap.classList.remove('hidden');
+
+      updateDots();
+      setNoteText(notes[0]);
+      playWarmChime([523.25], 1.5);
+    }
+
+    // Playful "No" button that smoothly dodges inside safe mobile screen bounds
+    const noBtn = document.getElementById('no-btn');
+    function dodgeNoButton(e) {
+      if (e) e.preventDefault();
+      const maxX = 95;
+      const maxY = 65;
+      const offsetX = (Math.random() - 0.5) * 2 * maxX;
+      const offsetY = -Math.random() * maxY - 12;
+      noBtn.style.transform = `translate3d(${offsetX}px, ${offsetY}px, 0)`;
+      playWarmChime([698.46], 0.9);
+    }
+
+    noBtn.addEventListener('mouseenter', dodgeNoButton);
+    noBtn.addEventListener('touchstart', dodgeNoButton, { passive: false });
+
+    // =========================================================
+    // 4. THREE.JS CENTERPIECE: HEART CRYSTAL + 1 GOLD RING + 80 MOTES
+    // =========================================================
+    let scene, camera, renderer;
+    let centerGroup, heartMesh, goldRing, motesMesh, coreLight;
+    const MOTE_COUNT = 80;
+    const moteData = [];
+    const dummy = new THREE.Object3D();
+
+    // Physics & Inertia Variables
+    let isDragging = false;
+    let pointerDownPos = { x: 0, y: 0 };
+    let prevPointer = { x: 0, y: 0 };
+    let targetRot = { x: 0.08, y: 0 };
+    let currentRot = { x: 0.08, y: 0 };
+    let pulseScale = 1.0;
+    let spinBoost = 0.0;
+    let bloomFactor = 0.0;
+
+    function createStudioEnvMap(rendererInstance) {
+      const pmrem = new THREE.PMREMGenerator(rendererInstance);
+      pmrem.compileEquirectangularShader();
+
+      const envScene = new THREE.Scene();
+      envScene.background = new THREE.Color(0x0a090d);
+
+      const planeGeo = new THREE.PlaneGeometry(10, 3);
+      const topLight = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: 0xffe8dc, side: THREE.DoubleSide }));
+      topLight.position.set(0, 6, 2);
+      topLight.lookAt(0, 0, 0);
+      envScene.add(topLight);
+
+      const sideLight = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: 0xff6b8b, side: THREE.DoubleSide }));
+      sideLight.position.set(-6, 1, 3);
+      sideLight.lookAt(0, 0, 0);
+      envScene.add(sideLight);
+
+      const rimLight = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: 0xf6f3ee, side: THREE.DoubleSide }));
+      rimLight.position.set(6, -2, 3);
+      rimLight.lookAt(0, 0, 0);
+      envScene.add(rimLight);
+
+      const texture = pmrem.fromScene(envScene, 0.04).texture;
+      pmrem.dispose();
+      return texture;
+    }
+
+    function createHeartGeometry() {
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0.32);
+      shape.bezierCurveTo(0, 0.38, -0.1, 0.54, -0.34, 0.54);
+      shape.bezierCurveTo(-0.72, 0.54, -0.72, 0.08, -0.72, 0.08);
+      shape.bezierCurveTo(-0.72, -0.26, -0.38, -0.58, 0, -0.84);
+      shape.bezierCurveTo(0.38, -0.58, 0.72, -0.26, 0.72, 0.08);
+      shape.bezierCurveTo(0.72, 0.08, 0.72, 0.54, 0.34, 0.54);
+      shape.bezierCurveTo(0.1, 0.54, 0, 0.38, 0, 0.32);
+
+      const geo = new THREE.ExtrudeGeometry(shape, {
+        depth: 0.22,
+        bevelEnabled: true,
+        bevelSegments: 12,
+        steps: 2,
+        bevelSize: 0.16,
+        bevelThickness: 0.18,
+        curveSegments: 36
+      });
+      geo.center();
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    function initThree() {
+      const container = document.getElementById('canvas-container');
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.set(0, 0, 5.2);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.25;
+      container.appendChild(renderer.domElement);
+
+      const envMap = createStudioEnvMap(renderer);
+      scene.environment = envMap;
+
+      centerGroup = new THREE.Group();
+      centerGroup.position.set(0, 0.22, 0);
+      scene.add(centerGroup);
+
+      // 1. Glossy Rose-Quartz / Ruby 3D Heart Crystal
+      const heartGeo = createHeartGeometry();
+      const heartMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(0xD4486A),
+        emissive: new THREE.Color(0x3a0814),
+        emissiveIntensity: 0.4,
+        metalness: 0.12,
+        roughness: 0.1,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.05,
+        reflectivity: 1.0,
+        envMap: envMap,
+        envMapIntensity: 2.3
+      });
+
+      heartMesh = new THREE.Mesh(heartGeo, heartMat);
+      heartMesh.scale.setScalar(0.84);
+      centerGroup.add(heartMesh);
+
+      // 2. Single Delicate Brushed Gold Orbital Ring
+      const ringGeo = new THREE.TorusGeometry(1.18, 0.009, 24, 120);
+      const ringMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(0xE6B8A2),
+        metalness: 0.92,
+        roughness: 0.16,
+        clearcoat: 0.5,
+        envMap: envMap,
+        envMapIntensity: 2.0
+      });
+      goldRing = new THREE.Mesh(ringGeo, ringMat);
+      goldRing.rotation.set(1.15, 0.35, 0.2);
+      centerGroup.add(goldRing);
+
+      // 3. ~80 Subtle Floating Light Motes
+      const moteGeo = new THREE.SphereGeometry(0.014, 8, 8);
+      const moteMat = new THREE.MeshBasicMaterial({
+        color: 0xF6F3EE,
+        transparent: true,
+        opacity: 0.75
+      });
+
+      motesMesh = new THREE.InstancedMesh(moteGeo, moteMat, MOTE_COUNT);
+      for (let i = 0; i < MOTE_COUNT; i++) {
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const radius = 1.25 + Math.random() * 1.45;
+        moteData.push({
+          theta,
+          phi,
+          baseRadius: radius,
+          speed: 0.0018 + Math.random() * 0.003,
+          scale: 0.5 + Math.random() * 1.0,
+          phase: Math.random() * Math.PI * 2
+        });
+      }
+      centerGroup.add(motesMesh);
+
+      // 4. Clean Studio Lights
+      scene.add(new THREE.AmbientLight(0xF6F3EE, 0.55));
+
+      coreLight = new THREE.PointLight(0xE6B8A2, 2.0, 8);
+      coreLight.position.set(0, 0.3, 1.1);
+      centerGroup.add(coreLight);
+
+      const keyLight = new THREE.DirectionalLight(0xFFF5EE, 2.2);
+      keyLight.position.set(3, 5, 4);
+      scene.add(keyLight);
+
+      // Touch / Drag & Tap Detection
+      const onPointerDown = (x, y) => {
+        isDragging = true;
+        pointerDownPos.x = x;
+        pointerDownPos.y = y;
+        prevPointer.x = x;
+        prevPointer.y = y;
+      };
+
+      const onPointerMove = (x, y) => {
+        if (!isDragging) return;
+        const dx = x - prevPointer.x;
+        const dy = y - prevPointer.y;
+        prevPointer.x = x;
+        prevPointer.y = y;
+
+        targetRot.y += dx * 0.008;
+        targetRot.x = Math.max(-0.7, Math.min(0.7, targetRot.x + dy * 0.006));
+      };
+
+      const onPointerUp = (x, y) => {
+        if (!isDragging) return;
+        isDragging = false;
+        const dist = Math.hypot(x - pointerDownPos.x, y - pointerDownPos.y);
+        // If it was a clean tap (not a drag), advance the 3-tap flow or pulse in celebration
+        if (dist < 10) {
+          if (step < 3) {
+            advanceStep();
+          } else {
+            pulseScale = 1.28;
+            spinBoost = 0.18;
+            playWarmChime([659.25, 880], 1.6);
+          }
+        }
+      };
+
+      container.addEventListener('mousedown', (e) => onPointerDown(e.clientX, e.clientY));
+      window.addEventListener('mousemove', (e) => onPointerMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', (e) => onPointerUp(e.clientX, e.clientY));
+
+      container.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 1) {
+          onPointerDown(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length === 1) {
+          onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        const touch = e.changedTouches[0];
+        if (touch) onPointerUp(touch.clientX, touch.clientY);
+      });
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    }
+
+    // =========================================================
+    // 5. 60FPS ANIMATION LOOP
+    // =========================================================
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const t = clock.getElapsedTime();
+
+      // Smooth inertia damping
+      targetRot.y += 0.004 + spinBoost;
+      spinBoost *= 0.94;
+      pulseScale += (1.0 - pulseScale) * 0.08;
+      bloomFactor *= 0.985;
+
+      currentRot.x += (targetRot.x - currentRot.x) * 0.08;
+      currentRot.y += (targetRot.y - currentRot.y) * 0.08;
+
+      // Gentle floating levitation
+      centerGroup.position.y = 0.22 + Math.sin(t * 1.4) * 0.05;
+
+      // Heart rotation & subtle heartbeat
+      const beat = 1 + Math.sin(t * 2.5) * 0.025;
+      heartMesh.scale.setScalar(0.84 * pulseScale * beat);
+      heartMesh.rotation.y = currentRot.y;
+      heartMesh.rotation.x = currentRot.x + Math.sin(t * 0.9) * 0.06;
+
+      // Single delicate gold ring orbit
+      goldRing.rotation.z = t * 0.25 + currentRot.y * 0.3;
+      goldRing.rotation.x = 1.15 + Math.sin(t * 0.7) * 0.1 + currentRot.x * 0.4;
+      const ringScale = 1 + (pulseScale - 1) * 0.35 + bloomFactor * 0.15;
+      goldRing.scale.setScalar(ringScale);
+
+      // Update 80 floating light motes
+      for (let i = 0; i < MOTE_COUNT; i++) {
+        const m = moteData[i];
+        m.theta += m.speed + spinBoost * 0.25;
+        const r = m.baseRadius + bloomFactor * 0.85 + Math.sin(t * 1.2 + m.phase) * 0.06;
+
+        const x = r * Math.sin(m.phi) * Math.cos(m.theta);
+        const y = r * Math.cos(m.phi) + Math.sin(t + m.phase) * 0.05;
+        const z = r * Math.sin(m.phi) * Math.sin(m.theta);
+
+        dummy.position.set(x, y, z);
+        const s = m.scale * (1 + bloomFactor * 0.6);
+        dummy.scale.set(s, s, s);
+        dummy.updateMatrix();
+        motesMesh.setMatrixAt(i, dummy.matrix);
+      }
+      motesMesh.instanceMatrix.needsUpdate = true;
+
+      // Dynamic inner glow intensity
+      coreLight.intensity = 2.0 + (pulseScale - 1) * 4.0 + bloomFactor * 2.5;
+
+      renderer.render(scene, camera);
+    }
+
+    window.onload = function () {
+      initThree();
+      animate();
+    };
+  </script>
+</body>
+</html>
