@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For Lylia ❤️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --rose-glow: rgba(244, 63, 94, 0.55);
+            --gold-glow: rgba(251, 191, 36, 0.45);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 35%, #2a081c 0%, #12030c 55%, #070106 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #fff;
+        }
+
+        .font-romantic {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        /* 3D Canvas Container */
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: auto;
+        }
+
+        /* UI Overlay Layer */
+        #ui-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 1.25rem;
+            padding-bottom: 2.25rem;
+        }
+
+        @media (min-height: 760px) {
+            #ui-layer {
+                padding-bottom: 3.5rem;
+            }
+        }
+
+        /* Glassmorphism Romantic Card */
+        .glass-card {
+            pointer-events: auto;
+            background: linear-gradient(145deg, rgba(45, 10, 28, 0.62) 0%, rgba(20, 4, 14, 0.78) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 182, 193, 0.22);
+            box-shadow: 
+                0 25px 60px -15px rgba(0, 0, 0, 0.75),
+                0 0 40px -10px rgba(244, 63, 94, 0.28),
+                inset 0 1px 1px rgba(255, 255, 255, 0.2);
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* Shimmering Text Gradient */
+        .text-shimmer {
+            background: linear-gradient(
+                90deg,
+                #fff1f2 0%,
+                #fda4af 30%,
+                #fde68a 50%,
+                #fda4af 70%,
+                #fff1f2 100%
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 5s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        /* Yes Button Styling & Pulse */
+        .btn-yes {
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #be123c 100%);
+            box-shadow: 
+                0 10px 25px -5px rgba(244, 63, 94, 0.65),
+                0 0 20px rgba(251, 113, 133, 0.4),
+                inset 0 2px 2px rgba(255, 255, 255, 0.35);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease;
+        }
+
+        .btn-yes:hover {
+            box-shadow: 
+                0 14px 32px -4px rgba(244, 63, 94, 0.85),
+                0 0 30px rgba(251, 191, 36, 0.55),
+                inset 0 2px 3px rgba(255, 255, 255, 0.45);
+        }
+
+        .btn-yes:active {
+            transform: scale(0.96) !important;
+        }
+
+        /* Playful Evading No Button */
+        #no-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: #fecdd3;
+            transition: left 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        top 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.25s ease,
+                        background-color 0.25s ease;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        /* Floating Mini Badge */
+        .floating-badge {
+            animation: floatBadge 3.5s ease-in-out infinite;
+        }
+
+        @keyframes floatBadge {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-6px); }
+        }
+
+        /* Celebration View Transition */
+        .hidden-view {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.95);
+            position: absolute;
+        }
+
+        .active-view {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            position: relative;
+        }
+
+        /* Custom Tooltip Bubble when No is attempted */
+        #tease-toast {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Ambient Instruction Bar -->
+    <div class="fixed top-4 left-0 right-0 z-20 flex justify-between items-center px-5 pointer-events-none">
+        <div class="floating-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-950/60 border border-rose-400/25 backdrop-blur-md text-xs text-rose-200/90 shadow-lg">
+            <span class="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+            <span>Drag or move to explore Lylia's 3D universe ✨</span>
+        </div>
+
+        <button id="sound-toggle" class="pointer-events-auto p-2.5 rounded-full bg-rose-950/60 border border-rose-400/25 backdrop-blur-md text-rose-200 hover:text-white hover:bg-rose-900/60 transition shadow-lg" title="Toggle Romantic Chimes">
+            <!-- Speaker Icon -->
+            <svg id="sound-on-icon" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Three.js 3D Scene Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Playful Floating Toast for "No" attempts -->
+    <div id="tease-toast" class="fixed top-16 left-1/2 -translate-x-1/2 z-30 pointer-events-none opacity-0 -translate-y-2 px-4 py-2 rounded-full bg-gradient-to-r from-rose-500/90 to-pink-600/90 text-white text-xs sm:text-sm font-medium shadow-xl border border-white/25 backdrop-blur-md whitespace-nowrap">
+        Nice try, Lylia! That button is strictly decorative 😉❤️
+    </div>
+
+    <!-- Main UI Overlay -->
+    <div id="ui-layer">
+        <!-- QUESTION CARD -->
+        <div id="question-card" class="glass-card active-view w-full max-w-md rounded-3xl p-6 sm:p-8 text-center relative overflow-visible">
+            <!-- Decorative Glow Crown -->
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-300/25 text-rose-200 text-xs font-medium mb-3 tracking-wider uppercase">
+                <span>✨ A Question From My Heart ✨</span>
+            </div>
+
+            <h1 class="font-romantic text-4xl sm:text-5xl font-bold text-shimmer leading-tight mb-2">
+                Lylia, will you be my girl?
+            </h1>
+
+            <p id="subtitle-text" class="text-rose-100/80 text-sm sm:text-base leading-relaxed mb-6 max-w-sm mx-auto">
+                Every single moment with you feels like pure magic, and my world is infinitely brighter with you in it.
+            </p>
+
+            <!-- Interactive Buttons Container -->
+            <div id="button-stage" class="relative flex flex-wrap items-center justify-center gap-4 min-h-[64px]">
+                <!-- YES BUTTON -->
+                <button id="yes-btn" class="btn-yes relative z-20 px-8 py-3.5 rounded-2xl font-semibold text-base sm:text-lg text-white tracking-wide flex items-center gap-2 cursor-pointer">
+                    <span>Yes, I will!</span>
+                    <span class="text-xl">❤️</span>
+                </button>
+
+                <!-- NO BUTTON (Starts beside Yes, then teleports safely on hover/touch/click) -->
+                <button id="no-btn" type="button" class="px-6 py-3.5 rounded-2xl font-medium text-sm sm:text-base cursor-pointer select-none">
+                    No
+                </button>
+            </div>
+
+            <!-- Subtle Attempt Counter / Hint -->
+            <p id="attempt-hint" class="text-xs text-rose-300/60 mt-4 h-4 transition-opacity duration-300 opacity-0">
+                Cupid has disabled the "No" option for Lylia 🏹
+            </p>
+        </div>
+
+        <!-- CELEBRATION CARD (Shown after clicking YES) -->
+        <div id="celebration-card" class="glass-card hidden-view w-full max-w-md rounded-3xl p-6 sm:p-8 text-center">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-semibold mb-3 tracking-wider uppercase">
+                <span>🎉 She Said Yes! 🎉</span>
+            </div>
+
+            <h2 class="font-romantic text-4xl sm:text-5xl font-bold text-shimmer leading-tight mb-3">
+                Forever Starts Now, Lylia! ❤️
+            </h2>
+
+            <p class="text-rose-100/90 text-sm sm:text-base leading-relaxed mb-6">
+                You just made me the happiest guy in the entire universe, <span class="text-rose-300 font-semibold">Lylia</span>! I promise to always cherish you, make you smile, and fill our days with love. ✨
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-3">
+                <button id="shower-hearts-btn" class="btn-yes px-6 py-3 rounded-2xl font-semibold text-sm sm:text-base text-white flex items-center gap-2 cursor-pointer">
+                    <span>Shower More Hearts</span>
+                    <span>💖✨</span>
+                </button>
+
+                <button id="replay-btn" class="px-4 py-3 rounded-2xl text-xs sm:text-sm font-medium bg-white/10 hover:bg-white/15 border border-white/20 text-rose-100 transition cursor-pointer">
+                    Replay Moment
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**************************************************************
+         * 1. SYNTHESIZED ROMANTIC AUDIO (Web Audio API - Zero External Dependencies)
+         **************************************************************/
+        class RomanticSoundEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) {
+                        this.ctx = new AudioCtx();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Play a whimsical boop when she tries to click/hover "No"
+            playDodgeSound() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    const baseFreq = 380 + Math.random() * 220;
+                    osc.frequency.setValueAtTime(baseFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.45, now + 0.12);
+
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.14);
+                } catch (e) {
+                    // Ignore audio errors on restricted devices
+                }
+            }
+
+            // Play a dreamy harp/chime chord progression when she clicks "Yes"
+            playCelebrationChord() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+
+                    // Romantic F Major 9th arpeggio frequencies
+                    const notes = [349.23, 440.00, 523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, index) => {
+                        const now = this.ctx.currentTime + index * 0.09;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now);
+
+                        gain.gain.setValueAtTime(0.001, now);
+                        gain.gain.linearRampToValueAtTime(0.12, now + 0.04);
+                        gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.8);
+
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+
+                        osc.start(now);
+                        osc.stop(now + 1.85);
+                    });
+                } catch (e) {
+                    // Ignore audio errors
+                }
+            }
+        }
+
+        const soundEngine = new RomanticSoundEngine();
+
+        /**************************************************************
+         * 2. THREE.JS 3D HEART & STARDUST UNIVERSE
+         **************************************************************/
+        let scene, camera, renderer;
+        let mainHeartMesh, heartGlowMesh, heartGroup;
+        let miniHearts = [];
+        let celebrationHearts = [];
+        let starField;
+        let pointLight1, pointLight2;
+
+        // State variables for animations and interaction
+        let isCelebration = false;
+        let heartBeatSpeed = 2.6;
+        let targetRotationX = 0;
+        let targetRotationY = 0;
+        let mouseX = 0;
+        let mouseY = 0;
+        let isDragging = false;
+        let previousPointer = { x: 0, y: 0 };
+        let cameraTargetZ = 14.5;
+        let cameraTargetY = -0.9;
+
+        // Create a mathematical 2D Heart Shape for 3D Extrusion
+        function createHeartShape() {
+            const shape = new THREE.Shape();
+            const x = 0, y = 0;
+            shape.moveTo(x, y + 0.65);
+            shape.bezierCurveTo(x, y + 0.65, x - 0.15, y + 1.35, x - 0.95, y + 1.35);
+            shape.bezierCurveTo(x - 2.05, y + 1.35, x - 2.05, y + 0.1, x - 2.05, y + 0.1);
+            shape.bezierCurveTo(x - 2.05, y - 0.85, x - 1.15, y - 1.65, x, y - 2.35);
+            shape.bezierCurveTo(x + 1.15, y - 1.65, x + 2.05, y - 0.85, x + 2.05, y + 0.1);
+            shape.bezierCurveTo(x + 2.05, y + 0.1, x + 2.05, y + 1.35, x + 0.95, y + 1.35);
+            shape.bezierCurveTo(x + 0.15, y + 1.35, x, y + 0.65, x, y + 0.65);
+            return shape;
+        }
+
+        function initThreeScene() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x12030c, 0.032);
+
+            camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            updateResponsiveCamera();
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Lighting Setup for Ruby / Rose Gold Glossy Reflections
+            const ambientLight = new THREE.AmbientLight(0xffb6c1, 0.75);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xfff0f5, 1.3);
+            dirLight.position.set(6, 10, 8);
+            scene.add(dirLight);
+
+            pointLight1 = new THREE.PointLight(0xff1e56, 2.8, 30);
+            pointLight1.position.set(4, 3, 5);
+            scene.add(pointLight1);
+
+            pointLight2 = new THREE.PointLight(0xffbf00, 1.9, 30);
+            pointLight2.position.set(-5, -2, 4);
+            scene.add(pointLight2);
+
+            const backRimLight = new THREE.PointLight(0xff69b4, 2.2, 25);
+            backRimLight.position.set(0, 5, -6);
+            scene.add(backRimLight);
+
+            // Main Group holding the centerpiece 3D Heart
+            heartGroup = new THREE.Group();
+            heartGroup.position.set(0, 1.25, 0);
+            scene.add(heartGroup);
+
+            const heartShape = createHeartShape();
+
+            // Extrude Geometry for Lush 3D Beveled Heart
+            const extrudeSettings = {
+                depth: 0.65,
+                bevelEnabled: true,
+                bevelSegments: 12,
+                steps: 2,
+                bevelSize: 0.38,
+                bevelThickness: 0.38
+            };
+
+            const heartGeometry = new THREE.ExtrudeGeometry(heartShape, extrudeSettings);
+            heartGeometry.center();
+
+            const heartMaterial = new THREE.MeshPhongMaterial({
+                color: 0xe11d48,
+                emissive: 0x4c0519,
+                specular: 0xffd1dc,
+                shininess: 110
+            });
+
+            mainHeartMesh = new THREE.Mesh(heartGeometry, heartMaterial);
+            heartGroup.add(mainHeartMesh);
+
+            // Subtle Wireframe/Crystal Halo Heart around main heart
+            const haloMaterial = new THREE.MeshBasicMaterial({
+                color: 0xfda4af,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.08
+            });
+            heartGlowMesh = new THREE.Mesh(heartGeometry, haloMaterial);
+            heartGlowMesh.scale.set(1.09, 1.09, 1.09);
+            heartGroup.add(heartGlowMesh);
+
+            // Create Orbiting Floating Mini 3D Hearts
+            const miniExtrudeSettings = {
+                depth: 0.25,
+                bevelEnabled: true,
+                bevelSegments: 5,
+                steps: 1,
+                bevelSize: 0.14,
+                bevelThickness: 0.14
+            };
+            const miniHeartGeo = new THREE.ExtrudeGeometry(heartShape, miniExtrudeSettings);
+            miniHeartGeo.center();
+
+            const palette = [0xf43f5e, 0xfb7185, 0xfbbf24, 0xf472b6, 0xffd1dc];
+
+            for (let i = 0; i < 36; i++) {
+                const mat = new THREE.MeshPhongMaterial({
+                    color: palette[i % palette.length],
+                    emissive: 0x3b0718,
+                    specular: 0xffffff,
+                    shininess: 90
+                });
+
+                const mesh = new THREE.Mesh(miniHeartGeo, mat);
+                const scale = 0.09 + Math.random() * 0.14;
+                mesh.scale.set(scale, scale, scale);
+
+                // Distribute in a dreamy 3D cloud around the centerpiece
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 3.2 + Math.random() * 7.5;
+                const yPos = (Math.random() - 0.5) * 9;
+
+                mesh.position.set(
+                    Math.cos(angle) * radius,
+                    yPos,
+                    Math.sin(angle) * radius - 2
+                );
+
+                mesh.rotation.set(
+                    (Math.random() - 0.5) * 0.8,
+                    Math.random() * Math.PI * 2,
+                    (Math.random() - 0.5) * 0.5
+                );
+
+                scene.add(mesh);
+                miniHearts.push({
+                    mesh,
+                    baseY: yPos,
+                    orbitSpeed: 0.15 + Math.random() * 0.35,
+                    orbitRadius: radius,
+                    orbitAngle: angle,
+                    bobSpeed: 1.2 + Math.random() * 2,
+                    bobOffset: Math.random() * Math.PI * 2,
+                    rotSpeedY: (Math.random() - 0.5) * 0.025
+                });
+            }
+
+            // Create Sparkling Golden & Rose Stardust Particles
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 450;
+            const positions = new Float32Array(starCount * 3);
+            const colors = new Float32Array(starCount * 3);
+
+            const colorRose = new THREE.Color(0xfda4af);
+            const colorGold = new THREE.Color(0xfde68a);
+            const colorWhite = new THREE.Color(0xffffff);
+
+            for (let i = 0; i < starCount; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 32;
+                positions[i * 3 + 1] = (Math.random() - 0.5) * 24;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 22 - 3;
+
+                const picked = i % 3 === 0 ? colorGold : (i % 2 === 0 ? colorRose : colorWhite);
+                colors[i * 3] = picked.r;
+                colors[i * 3 + 1] = picked.g;
+                colors[i * 3 + 2] = picked.b;
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const starMat = new THREE.PointsMaterial({
+                size: 0.09,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.85
+            });
+
+            starField = new THREE.Points(starGeo, starMat);
+            scene.add(starField);
+
+            setupSceneInteraction(miniHeartGeo, palette);
+        }
+
+        // Spawn a burst of 3D hearts flying outward when "Yes" or "Shower More Hearts" is clicked
+        function spawnCelebrationBurst(miniHeartGeo, palette) {
+            for (let i = 0; i < 32; i++) {
+                const mat = new THREE.MeshPhongMaterial({
+                    color: palette[i % palette.length],
+                    emissive: 0x500724,
+                    specular: 0xffffff,
+                    shininess: 100
+                });
+
+                const mesh = new THREE.Mesh(miniHeartGeo, mat);
+                const scale = 0.11 + Math.random() * 0.15;
+                mesh.scale.set(scale, scale, scale);
+                mesh.position.set(0, 1.25, 0);
+
+                // Spherical velocity burst
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                const speed = 0.08 + Math.random() * 0.18;
+
+                const velocity = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta) * speed,
+                    Math.cos(phi) * speed + 0.06,
+                    Math.sin(phi) * Math.sin(theta) * speed
+                );
+
+                scene.add(mesh);
+                celebrationHearts.push({
+                    mesh,
+                    velocity,
+                    rotSpeed: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.12,
+                        (Math.random() - 0.5) * 0.12,
+                        (Math.random() - 0.5) * 0.12
+                    ),
+                    life: 1.0
+                });
+            }
+        }
+
+        function updateResponsiveCamera() {
+            if (!camera) return;
+            const isMobile = window.innerWidth < 640;
+            cameraTargetZ = isMobile ? 16.5 : 13.8;
+            cameraTargetY = isMobile ? -1.1 : -0.75;
+            camera.position.z = cameraTargetZ;
+            camera.position.y = cameraTargetY;
+        }
+
+        function setupSceneInteraction(miniHeartGeo, palette) {
+            // Mouse & Touch Parallax + Camera Orbit
+            window.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousPointer = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                // Normalized coordinates (-1 to 1)
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                if (isDragging) {
+                    const deltaX = e.clientX - previousPointer.x;
+                    const deltaY = e.clientY - previousPointer.y;
+                    targetRotationY += deltaX * 0.008;
+                    targetRotationX += deltaY * 0.005;
+                    targetRotationX = Math.max(-0.6, Math.min(0.6, targetRotationX));
+                    previousPointer = { x: e.clientX, y: e.clientY };
+                }
+            });
+
+            window.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    previousPointer = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                isDragging = false;
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+                    mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
+                    mouseY = -(touch.clientY / window.innerHeight) * 2 + 1;
+
+                    if (isDragging) {
+                        const deltaX = touch.clientX - previousPointer.x;
+                        const deltaY = touch.clientY - previousPointer.y;
+                        targetRotationY += deltaX * 0.008;
+                        targetRotationX += deltaY * 0.005;
+                        targetRotationX = Math.max(-0.6, Math.min(0.6, targetRotationX));
+                        previousPointer = { x: touch.clientX, y: touch.clientY };
+                    }
+                }
+            }, { passive: true });
+
+            window.addEventListener('resize', () => {
+                if (!camera || !renderer) return;
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                updateResponsiveCamera();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                keepNoButtonInBounds();
+            });
+
+            // Expose burst function globally for UI triggers
+            window.triggerHeartBurst = () => spawnCelebrationBurst(miniHeartGeo, palette);
+        }
+
+        // Main 3D Animation Loop
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const elapsed = clock.getElapsedTime();
+
+            if (heartGroup && mainHeartMesh) {
+                // Realistic lub-dub heartbeat pulse formula
+                const beatPhase = elapsed * heartBeatSpeed;
+                const pulse = Math.pow(Math.sin(beatPhase), 6) * 0.14 + Math.sin(beatPhase * 2) * 0.04;
+                const baseScale = isCelebration ? 1.15 : 1.0;
+                const currentScale = baseScale + pulse;
+
+                mainHeartMesh.scale.set(currentScale, currentScale, currentScale);
+                heartGlowMesh.scale.set(currentScale * 1.1, currentScale * 1.1, currentScale * 1.1);
+
+                // Gentle floating + interactive rotation
+                heartGroup.position.y = 1.35 + Math.sin(elapsed * 1.6) * 0.18;
+
+                if (isCelebration) {
+                    targetRotationY += 0.018;
+                } else {
+                    targetRotationY += 0.004;
+                }
+
+                const desiredRotY = targetRotationY + mouseX * 0.45;
+                const desiredRotX = targetRotationX - mouseY * 0.25;
+
+                heartGroup.rotation.y += (desiredRotY - heartGroup.rotation.y) * 0.07;
+                heartGroup.rotation.x += (desiredRotX - heartGroup.rotation.x) * 0.07;
+            }
+
+            // Animate Orbiting Mini Hearts
+            miniHearts.forEach((item) => {
+                item.orbitAngle += item.orbitSpeed * 0.008 * (isCelebration ? 2.4 : 1);
+                item.mesh.position.x = Math.cos(item.orbitAngle) * item.orbitRadius;
+                item.mesh.position.z = Math.sin(item.orbitAngle) * item.orbitRadius - 2;
+                item.mesh.position.y = item.baseY + Math.sin(elapsed * item.bobSpeed + item.bobOffset) * 0.45;
+                item.mesh.rotation.y += item.rotSpeedY * (isCelebration ? 2.5 : 1);
+            });
+
+            // Animate Burst Hearts on Celebration
+            for (let i = celebrationHearts.length - 1; i >= 0; i--) {
+                const c = celebrationHearts[i];
+                c.mesh.position.add(c.velocity);
+                c.velocity.y -= 0.0018; // gentle gravity
+                c.mesh.rotation.x += c.rotSpeed.x;
+                c.mesh.rotation.y += c.rotSpeed.y;
+                c.mesh.rotation.z += c.rotSpeed.z;
+                c.life -= 0.008;
+
+                if (c.life <= 0) {
+                    scene.remove(c.mesh);
+                    celebrationHearts.splice(i, 1);
+                } else {
+                    const s = Math.max(0.001, c.life * 0.18);
+                    c.mesh.scale.set(s, s, s);
+                }
+            }
+
+            // Slowly drift the stardust field
+            if (starField) {
+                starField.rotation.y = elapsed * 0.025;
+                starField.rotation.x = Math.sin(elapsed * 0.1) * 0.05;
+            }
+
+            // Smooth camera parallax
+            if (camera) {
+                const camX = mouseX * 0.65;
+                const camY = cameraTargetY + mouseY * 0.35;
+                camera.position.x += (camX - camera.position.x) * 0.05;
+                camera.position.y += (camY - camera.position.y) * 0.05;
+                camera.position.z += (cameraTargetZ - camera.position.z) * 0.05;
+                camera.lookAt(0, 0.3, 0);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        /**************************************************************
+         * 3. INTERACTIVE "NO" BUTTON EVASION & "YES" CELEBRATION LOGIC
+         **************************************************************/
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+        const teaseToast = document.getElementById('tease-toast');
+        const attemptHint = document.getElementById('attempt-hint');
+        const questionCard = document.getElementById('question-card');
+        const celebrationCard = document.getElementById('celebration-card');
+        const showerHeartsBtn = document.getElementById('shower-hearts-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const soundToggle = document.getElementById('sound-toggle');
+
+        let noAttempts = 0;
+        let yesScale = 1;
+        let toastTimeout = null;
+        let isNoFloatingFixed = false;
+
+        const playfulNoButtonLabels = [
+            "Are you sure, Lylia? 🥺",
+            "Nice try! ✨",
+            "404: 'No' Not Found",
+            "My heart says Yes ❤️",
+            "Button broken 😉",
+            "Still trying, Lylia? 😂",
+            "Locked by Cupid 🏹",
+            "Click the pink one! 👉",
+            "Impossible! 💖"
+        ];
+
+        const playfulToastMessages = [
+            "Nice try, Lylia! That button refuses to cooperate 😉❤️",
+            "Error 404: Rejecting me is not supported in this universe ✨",
+            "Look how much the 'Yes' button wants you to click it! 💖",
+            "Even the 3D heart beats faster when you get close to 'Yes' 🥰",
+            "Cupid put a spell on the 'No' button just for you, Lylia! 🏹"
+        ];
+
+        function showTeaseToast(message) {
+            teaseToast.textContent = message;
+            teaseToast.classList.remove('opacity-0', '-translate-y-2');
+            teaseToast.classList.add('opacity-100', 'translate-y-0');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                teaseToast.classList.remove('opacity-100', 'translate-y-0');
+                teaseToast.classList.add('opacity-0', '-translate-y-2');
+            }, 2600);
+        }
+
+        function evadeNoButton(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            if (isCelebration) return;
+
+            noAttempts++;
+            soundEngine.playDodgeSound();
+
+            // Reveal cute hint inside card
+            attemptHint.classList.remove('opacity-0');
+            attemptHint.classList.add('opacity-100');
+
+            // Update "No" button label playfully
+            const nextLabel = playfulNoButtonLabels[(noAttempts - 1) % playfulNoButtonLabels.length];
+            noBtn.textContent = nextLabel;
+
+            // Show floating toast message
+            const nextToast = playfulToastMessages[(noAttempts - 1) % playfulToastMessages.length];
+            showTeaseToast(nextToast);
+
+            // Grow the "Yes" button slightly each time so it becomes irresistibly inviting
+            yesScale = Math.min(1.45, 1 + noAttempts * 0.065);
+            yesBtn.style.transform = `scale(${yesScale})`;
+
+            // Make the 3D heart pulse a little faster with excitement
+            heartBeatSpeed = Math.min(4.2, 2.6 + noAttempts * 0.15);
+
+            // Move the "No" button to fixed viewport coordinates so it can dodge anywhere safely
+            if (!isNoFloatingFixed) {
+                const rect = noBtn.getBoundingClientRect();
+                noBtn.style.position = 'fixed';
+                noBtn.style.left = `${rect.left}px`;
+                noBtn.style.top = `${rect.top}px`;
+                noBtn.style.zIndex = '50';
+                document.body.appendChild(noBtn);
+                isNoFloatingFixed = true;
+            }
+
+            const btnRect = noBtn.getBoundingClientRect();
+            const yesRect = yesBtn.getBoundingClientRect();
+            const padding = 20;
+
+            const maxX = window.innerWidth - btnRect.width - padding;
+            const maxY = window.innerHeight - btnRect.height - padding;
+
+            let newX, newY;
+            let safetyCount = 0;
+
+            // Pick a random spot on screen that does not overlap the "Yes" button or top bar
+            do {
+                newX = Math.max(padding, Math.random() * maxX);
+                newY = Math.max(75, Math.random() * maxY);
+                safetyCount++;
+            } while (
+                safetyCount < 25 &&
+                newX + btnRect.width > yesRect.left - 35 &&
+                newX < yesRect.right + 35 &&
+                newY + btnRect.height > yesRect.top - 35 &&
+                newY < yesRect.bottom + 35
+            );
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        function keepNoButtonInBounds() {
+            if (!isNoFloatingFixed) return;
+            const rect = noBtn.getBoundingClientRect();
+            const maxX = window.innerWidth - rect.width - 16;
+            const maxY = window.innerHeight - rect.height - 16;
+
+            if (rect.left > maxX) noBtn.style.left = `${Math.max(16, maxX)}px`;
+            if (rect.top > maxY) noBtn.style.top = `${Math.max(70, maxY)}px`;
+        }
+
+        // Attach all possible triggers to "No" so she can never actually click or activate it
+        noBtn.addEventListener('mouseenter', evadeNoButton);
+        noBtn.addEventListener('touchstart', evadeNoButton, { passive: false });
+        noBtn.addEventListener('click', evadeNoButton);
+        noBtn.addEventListener('focus', () => {
+            noBtn.blur();
+            evadeNoButton();
+        });
+
+        // Handle "Yes" Button Click -> Grand 3D Celebration!
+        yesBtn.addEventListener('click', () => {
+            isCelebration = true;
+            heartBeatSpeed = 4.6;
+            cameraTargetZ = window.innerWidth < 640 ? 14.2 : 11.8;
+
+            soundEngine.playCelebrationChord();
+
+            // Hide floating "No" button immediately
+            noBtn.style.opacity = '0';
+            noBtn.style.pointerEvents = 'none';
+            teaseToast.classList.remove('opacity-100');
+            teaseToast.classList.add('opacity-0');
+
+            // Transition cards smoothly
+            questionCard.classList.remove('active-view');
+            questionCard.classList.add('hidden-view');
+
+            celebrationCard.classList.remove('hidden-view');
+            celebrationCard.classList.add('active-view');
+
+            // Launch 3D Heart Fountain Burst
+            if (window.triggerHeartBurst) {
+                window.triggerHeartBurst();
+                setTimeout(() => window.triggerHeartBurst(), 400);
+            }
+        });
+
+        // Shower More Hearts Button
+        showerHeartsBtn.addEventListener('click', () => {
+            soundEngine.playCelebrationChord();
+            if (window.triggerHeartBurst) {
+                window.triggerHeartBurst();
+            }
+        });
+
+        // Replay Moment Button
+        replayBtn.addEventListener('click', () => {
+            isCelebration = false;
+            noAttempts = 0;
+            yesScale = 1;
+            heartBeatSpeed = 2.6;
+            updateResponsiveCamera();
+
+            yesBtn.style.transform = 'scale(1)';
+            noBtn.textContent = 'No';
+            noBtn.style.opacity = '1';
+            noBtn.style.pointerEvents = 'auto';
+
+            if (isNoFloatingFixed) {
+                noBtn.style.position = '';
+                noBtn.style.left = '';
+                noBtn.style.top = '';
+                noBtn.style.zIndex = '';
+                document.getElementById('button-stage').appendChild(noBtn);
+                isNoFloatingFixed = false;
+            }
+
+            attemptHint.classList.remove('opacity-100');
+            attemptHint.classList.add('opacity-0');
+
+            celebrationCard.classList.remove('active-view');
+            celebrationCard.classList.add('hidden-view');
+
+            questionCard.classList.remove('hidden-view');
+            questionCard.classList.add('active-view');
+        });
+
+        // Sound Toggle Button
+        soundToggle.addEventListener('click', () => {
+            soundEngine.enabled = !soundEngine.enabled;
+            soundToggle.style.opacity = soundEngine.enabled ? '1' : '0.45';
+            if (soundEngine.enabled) {
+                soundEngine.playDodgeSound();
+            }
+        });
+
+        // Start 3D Scene on Window Load
+        window.onload = function () {
+            initThreeScene();
+            animate();
+        };
+    </script>
+</body>
+</html>
