@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Starlight Sanctuary · For Lylia ✨❤️</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+            background: radial-gradient(circle at 50% 25%, #2a0d24 0%, #110514 60%, #050208 100%);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #fff;
+            touch-action: none;
+        }
+
+        .font-romantic {
+            font-family: 'Cormorant Garamond', serif;
+        }
+
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            z-index: 1;
+            touch-action: none;
+        }
+
+        /* Safe-area aware mobile HUD spacing */
+        .safe-top {
+            padding-top: max(1rem, env(safe-area-inset-top));
+        }
+
+        .safe-bottom {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+        }
+
+        /* Luxury Glassmorphism Panels */
+        .sanctuary-glass {
+            background: linear-gradient(145deg, rgba(36, 12, 30, 0.82) 0%, rgba(14, 4, 15, 0.90) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(251, 113, 133, 0.28);
+            box-shadow:
+                0 25px 60px -15px rgba(0, 0, 0, 0.85),
+                0 0 38px -8px rgba(244, 63, 94, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        }
+
+        .hud-pill {
+            background: rgba(20, 6, 18, 0.76);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 192, 203, 0.2);
+        }
+
+        /* Shimmer Text */
+        .text-shimmer {
+            background: linear-gradient(90deg, #fff1f2 0%, #fda4af 30%, #fde68a 50%, #fda4af 70%, #fff1f2 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 5s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        /* Primary Glow Button (Thumb-Friendly 48px+ Target) */
+        .btn-sanctuary {
+            min-height: 48px;
+            background: linear-gradient(135deg, #f43f5e 0%, #e11d48 55%, #9f1239 100%);
+            box-shadow:
+                0 12px 28px -6px rgba(225, 29, 72, 0.65),
+                0 0 20px rgba(251, 113, 133, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.45);
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.28s ease;
+            touch-action: manipulation;
+        }
+
+        .btn-sanctuary:hover {
+            transform: translateY(-2px);
+            box-shadow:
+                0 16px 34px -4px rgba(244, 63, 94, 0.85),
+                0 0 28px rgba(251, 191, 36, 0.5),
+                inset 0 1px 2px rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-sanctuary:active {
+            transform: scale(0.96);
+        }
+
+        /* Virtual Touch Joystick (Appears smoothly on touch drag) */
+        #joystick-zone {
+            position: fixed;
+            width: 112px;
+            height: 112px;
+            border-radius: 9999px;
+            border: 1.5px solid rgba(251, 113, 133, 0.35);
+            background: radial-gradient(circle, rgba(244, 63, 94, 0.14) 0%, rgba(244, 63, 94, 0.03) 70%);
+            pointer-events: none;
+            z-index: 18;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        #joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 42px;
+            height: 42px;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 35% 35%, #fff1f2, #f43f5e);
+            box-shadow: 0 0 16px rgba(244, 63, 94, 0.8);
+            transform: translate(-50%, -50%);
+        }
+
+        /* Playful Unclickable No Button */
+        #no-btn {
+            min-height: 48px;
+            transition: left 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        top 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        transform 0.2s ease;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D Three.js World Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Virtual Touch Joystick Visual -->
+    <div id="joystick-zone">
+        <div id="joystick-knob"></div>
+    </div>
+
+    <!-- TOP GAME HUD (Hidden until journey begins) -->
+    <header id="game-hud" class="fixed top-0 left-0 right-0 z-20 flex items-center justify-between gap-2 px-3.5 sm:px-6 safe-top pointer-events-none opacity-0 transition-opacity duration-500">
+        <!-- Beacon Progress Counter -->
+        <div class="hud-pill px-3.5 py-2 rounded-full flex items-center gap-2.5 pointer-events-auto shadow-lg max-w-[78vw]">
+            <div class="flex items-center gap-1.5 shrink-0" id="crystal-dots">
+                <span class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-dot="0"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-dot="1"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-dot="2"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300" data-dot="3"></span>
+            </div>
+            <span class="text-white/25">|</span>
+            <span id="progress-label" class="text-[11px] sm:text-xs font-semibold tracking-wide text-rose-100 truncate">
+                0 / 4 Beacons · For Lylia
+            </span>
+        </div>
+
+        <!-- Sound Toggle Button (44px+ Mobile Tap Target) -->
+        <div class="flex items-center gap-2 pointer-events-auto shrink-0">
+            <button id="sound-toggle-btn" class="hud-pill w-11 h-11 rounded-full flex items-center justify-center text-rose-200 hover:text-white active:scale-95 transition cursor-pointer" title="Toggle Ambient Chimes">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- BOTTOM CONTROLS HINT BAR -->
+    <div id="controls-hint" class="fixed bottom-0 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-0 transition-opacity duration-500 w-[92vw] max-w-md text-center safe-bottom">
+        <div id="hint-pill-text" class="hud-pill inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-[11px] sm:text-xs text-rose-100/95 shadow-lg">
+            <span>✨ Tap anywhere on the island or drag thumb to glide, Lylia</span>
+        </div>
+    </div>
+
+    <!-- Playful Floating Toast for "No" Button Evasion -->
+    <div id="tease-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 -translate-y-2 transition-all duration-300 sanctuary-glass px-4 py-2.5 rounded-full text-xs sm:text-sm text-rose-100 font-medium shadow-2xl max-w-[90vw] text-center">
+        Nice try, Lylia! The sanctuary only knows YES ❤️
+    </div>
+
+    <!-- 1. START SCREEN OVERLAY (Personalized for Lylia) -->
+    <section id="start-screen" class="fixed inset-0 z-30 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm transition-opacity duration-700">
+        <div class="sanctuary-glass w-full max-w-[92vw] sm:max-w-md rounded-3xl p-6 sm:p-9 text-center">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-500/20 border border-rose-300/30 text-rose-200 text-[11px] sm:text-xs font-semibold mb-3.5 tracking-wider uppercase">
+                <span>STARLIGHT SANCTUARY · FOR LYLIA ❤️</span>
+            </div>
+
+            <h1 class="font-romantic text-4xl sm:text-5xl font-bold text-shimmer leading-tight mb-3">
+                For Lylia ✨
+            </h1>
+
+            <p class="text-rose-100/90 text-sm sm:text-base leading-relaxed mb-6">
+                Welcome to your twilight floating island, <span class="text-rose-300 font-semibold">Lylia</span>. Guide your glowing spirit to awaken the four starlight beacons and unlock the Heart Altar waiting for you at the center.
+            </p>
+
+            <button id="start-adventure-btn" class="btn-sanctuary w-full py-3.5 px-6 rounded-2xl font-semibold text-base text-white tracking-wide flex items-center justify-center gap-2 cursor-pointer">
+                <span>Begin Lylia's Journey</span>
+                <span>✨❤️</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- 2. MEMORY BEACON LOVE NOTE CARD (Appears when each of the 4 beacons is awakened) -->
+    <section id="memory-modal" class="fixed inset-0 z-30 flex items-center justify-center p-4 bg-black/45 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-400">
+        <div class="sanctuary-glass w-full max-w-[92vw] sm:max-w-md rounded-3xl p-6 sm:p-8 text-center transform scale-95 transition-transform duration-400" id="memory-card-inner">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/35 text-amber-200 text-xs font-semibold mb-3 tracking-wider uppercase" id="memory-badge">
+                Beacon 01 / 04 Awakened ✨
+            </div>
+
+            <h2 id="memory-title" class="font-romantic text-3xl sm:text-4xl font-bold text-white leading-tight mb-3">
+                01 · The First Spark
+            </h2>
+
+            <p id="memory-body" class="text-rose-100/90 text-sm sm:text-base leading-relaxed mb-6">
+                From the very first moment our paths crossed, Lylia, something shifted—like a quiet star suddenly lighting up the entire night sky.
+            </p>
+
+            <button id="continue-explore-btn" class="btn-sanctuary w-full py-3.5 px-6 rounded-2xl font-semibold text-sm sm:text-base text-white flex items-center justify-center gap-2 cursor-pointer">
+                <span id="continue-btn-label">Continue Exploring</span>
+                <span>→</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- 3. CENTRAL HEART ALTAR GRAND FINALE MODAL -->
+    <section id="finale-modal" class="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md opacity-0 pointer-events-none transition-opacity duration-500">
+        <!-- PROPOSAL QUESTION VIEW -->
+        <div id="finale-question-card" class="sanctuary-glass w-full max-w-[92vw] sm:max-w-md rounded-3xl p-6 sm:p-8 text-center relative">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-rose-500/20 border border-rose-300/35 text-rose-200 text-xs font-semibold mb-3 tracking-wider uppercase">
+                <span>💖 Heart Altar Unlocked 💖</span>
+            </div>
+
+            <h2 id="proposal-headline" class="font-romantic text-4xl sm:text-5xl font-bold text-shimmer leading-tight mb-3">
+                Lylia, will you be my girl? ❤️
+            </h2>
+
+            <p id="proposal-subtext" class="text-rose-100/90 text-sm leading-relaxed mb-6">
+                Every starlight beacon on this island leads straight to you, Lylia. You are my favorite adventure, my calm, and my happiest place.
+            </p>
+
+            <!-- Yes & Unclickable Dodging No Button Stage -->
+            <div id="finale-btn-stage" class="relative flex flex-wrap items-center justify-center gap-3.5 min-h-[64px]">
+                <button id="yes-btn" class="btn-sanctuary relative z-20 px-8 py-3.5 rounded-2xl text-base font-bold text-white tracking-wide flex items-center gap-2 cursor-pointer">
+                    <span>Yes, I will!</span>
+                    <span>❤️✨</span>
+                </button>
+
+                <button id="no-btn" type="button" class="hud-pill px-6 py-3.5 rounded-2xl text-sm font-medium text-rose-200 hover:text-white cursor-pointer">
+                    No
+                </button>
+            </div>
+
+            <p id="no-hint-footer" class="text-xs text-rose-300/75 mt-4 min-h-[18px] opacity-0 transition-opacity duration-300">
+                Cupid has enchanted the "No" button for Lylia so it can never be clicked 🏹
+            </p>
+        </div>
+
+        <!-- CELEBRATION FREE-ROAM VIEW -->
+        <div id="finale-celebration-card" class="sanctuary-glass w-full max-w-[92vw] sm:max-w-md rounded-3xl p-6 sm:p-8 text-center hidden">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-semibold mb-3 tracking-wider uppercase">
+                <span>🎉 Forever Starts Now! 🎉</span>
+            </div>
+
+            <h2 id="celebration-headline" class="font-romantic text-4xl sm:text-5xl font-bold text-shimmer leading-tight mb-3">
+                Lylia &amp; Me — Forever Starts Tonight ✨
+            </h2>
+
+            <p id="celebration-subtext" class="text-rose-100/90 text-sm leading-relaxed mb-6">
+                The entire Starlight Sanctuary is celebrating with us, Lylia! Thank you for making me the happiest person in the universe. ❤️
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button id="launch-fireworks-btn" class="btn-sanctuary w-full sm:w-auto px-6 py-3.5 rounded-2xl text-sm font-semibold text-white flex items-center justify-center gap-2 cursor-pointer">
+                    <span>Launch Heart Fireworks</span>
+                    <span>💖🎆</span>
+                </button>
+
+                <button id="free-roam-btn" class="hud-pill w-full sm:w-auto min-h-[48px] px-5 py-3.5 rounded-2xl text-sm font-medium text-rose-100 hover:bg-white/15 transition cursor-pointer">
+                    Free Roam Island ✨
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        /*************************************************************************
+         * 1. SYNTHESIZED HARP & CELESTIAL CHIME AUDIO (Web Audio API)
+         *************************************************************************/
+        class SanctuaryAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Warm ascending harp arpeggio when awakening a Memory Beacon
+            playBeaconAwaken(beaconIndex) {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+
+                    // Each beacon plays a progressively higher, richer pentatonic chord
+                    const baseTranspositions = [1.0, 1.122, 1.26, 1.498];
+                    const mult = baseTranspositions[beaconIndex % 4];
+                    const notes = [261.63, 329.63, 392.00, 493.88, 587.33].map(f => f * mult);
+
+                    notes.forEach((freq, i) => {
+                        const now = this.ctx.currentTime + i * 0.085;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+
+                        gain.gain.setValueAtTime(0.001, now);
+                        gain.gain.linearRampToValueAtTime(0.11, now + 0.03);
+                        gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.5);
+
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 1.55);
+                    });
+                } catch (e) {}
+            }
+
+            // Playful dodge chime when trying to click "No"
+            playDodgeBoop() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    const f = 420 + Math.random() * 180;
+                    osc.frequency.setValueAtTime(f, now);
+                    osc.frequency.exponentialRampToValueAtTime(f * 1.4, now + 0.13);
+
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } catch (e) {}
+            }
+
+            // Grand celebratory harmonic symphony when she clicks "Yes"
+            playCelebrationMelody() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+
+                    const notes = [349.23, 440.00, 523.25, 659.25, 783.99, 880.00, 1046.50, 1318.51];
+                    notes.forEach((freq, idx) => {
+                        const now = this.ctx.currentTime + idx * 0.09;
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now);
+
+                        gain.gain.setValueAtTime(0.001, now);
+                        gain.gain.linearRampToValueAtTime(0.12, now + 0.04);
+                        gain.gain.exponentialRampToValueAtTime(0.0008, now + 2.2);
+
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 2.25);
+                    });
+                } catch (e) {}
+            }
+        }
+
+        const audio = new SanctuaryAudio();
+
+        /*************************************************************************
+         * 2. PERSONALIZED MEMORY BEACON STORY CONTENT FOR LYLIA
+         *************************************************************************/
+        const HER_NAME = 'Lylia';
+
+        function getMemoryBeaconsData() {
+            return [
+                {
+                    id: 0,
+                    badge: 'Beacon 01 / 04 Awakened ✨',
+                    title: '01 · The First Spark',
+                    body: `From the very first moment our paths crossed, Lylia, something shifted—like a quiet star suddenly lighting up the entire twilight sky.`,
+                    pos: new THREE.Vector3(-8.2, 0, -6.8),
+                    color: 0xf43f5e
+                },
+                {
+                    id: 1,
+                    badge: 'Beacon 02 / 04 Awakened ✨',
+                    title: "02 · Lylia's Radiant Smile",
+                    body: `No constellation in this entire sanctuary shines brighter than the way your eyes light up when you smile, Lylia. One look from you makes every heavy day disappear.`,
+                    pos: new THREE.Vector3(8.5, 0, -6.2),
+                    color: 0xfb7185
+                },
+                {
+                    id: 2,
+                    badge: 'Beacon 03 / 04 Awakened ✨',
+                    title: '03 · Every Little Moment',
+                    body: `Whether we are laughing over nothing or talking for hours, every ordinary second turns into my favorite memory simply because I get to share it with Lylia.`,
+                    pos: new THREE.Vector3(7.8, 0, 7.2),
+                    color: 0xfbbf24
+                },
+                {
+                    id: 3,
+                    badge: 'Beacon 04 / 04 Awakened ✨',
+                    title: '04 · My Favorite Place',
+                    body: `Lylia, you are my calm in the chaos and my favorite place to be. The fourth starlight beam is now connected—follow the golden path to the central Heart Altar!`,
+                    pos: new THREE.Vector3(-8.0, 0, 7.0),
+                    color: 0xf472b6
+                }
+            ];
+        }
+
+        /*************************************************************************
+         * 3. THREE.JS 3D STARLIGHT SANCTUARY WORLD (MOBILE-OPTIMIZED)
+         *************************************************************************/
+        let scene, camera, renderer, raycaster, pointerNDC;
+        let playerGroup, playerCoreMesh, playerHaloMesh, playerLight;
+        let playerTrailParticles = [];
+        let islandGroundMesh;
+        let centralAltarHeart, centralAltarRing, centralAltarLight, altarPortalRing;
+        let beacons = [];
+        let ambientHearts = [];
+        let fireworkHearts = [];
+        let starField;
+
+        // Game State
+        let gameStarted = false;
+        let isModalPaused = false;
+        let awakenedCount = 0;
+        let altarUnlocked = false;
+        let isCelebrationMode = false;
+        let pendingFinaleOpen = false;
+
+        // Player Movement State (Supports Keyboard, Tap-to-Glide & Touch Joystick)
+        const playerPos = new THREE.Vector3(0, 0.85, 11.2);
+        const playerVel = new THREE.Vector3(0, 0, 0);
+        let tapDestination = null;
+        let destinationMarkerMesh = null;
+
+        const keysPressed = { w: false, a: false, s: false, d: false, arrowup: false, arrowleft: false, arrowdown: false, arrowright: false };
+        let joystickVector = { x: 0, y: 0 };
+
+        // Mathematical 2D Heart Shape for 3D Extrusion
+        function createHeartShape() {
+            const s = new THREE.Shape();
+            s.moveTo(0, 0.35);
+            s.bezierCurveTo(0, 0.35, -0.08, 0.82, -0.58, 0.82);
+            s.bezierCurveTo(-1.22, 0.82, -1.22, 0.05, -1.22, 0.05);
+            s.bezierCurveTo(-1.22, -0.52, -0.68, -1.02, 0, -1.45);
+            s.bezierCurveTo(0.68, -1.02, 1.22, -0.52, 1.22, 0.05);
+            s.bezierCurveTo(1.22, 0.05, 1.22, 0.82, 0.58, 0.82);
+            s.bezierCurveTo(0.08, 0.82, 0, 0.35, 0, 0.35);
+            return s;
+        }
+
+        function initSanctuaryWorld() {
+            const container = document.getElementById('canvas-container');
+            const isMobileDevice = window.innerWidth < 768;
+
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x140616, 0.017);
+
+            const aspect = window.innerWidth / window.innerHeight;
+            const initialFov = aspect < 1 ? 56 : 46;
+            camera = new THREE.PerspectiveCamera(initialFov, aspect, 0.1, 220);
+            camera.position.set(0, aspect < 1 ? 15.5 : 12.5, aspect < 1 ? 26 : 22);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            container.appendChild(renderer.domElement);
+
+            raycaster = new THREE.Raycaster();
+            pointerNDC = new THREE.Vector2();
+
+            // ------------------------------------------------------------------
+            // A. TWILIGHT ROSE-GOLD LIGHTING & SKY ATMOSPHERE
+            // ------------------------------------------------------------------
+            const hemiLight = new THREE.HemisphereLight(0xffb6c1, 0x1e0924, 1.15);
+            scene.add(hemiLight);
+
+            const moonSunLight = new THREE.DirectionalLight(0xffe4e6, 1.35);
+            moonSunLight.position.set(14, 24, 12);
+            moonSunLight.castShadow = true;
+            const shadowRes = isMobileDevice ? 1024 : 2048;
+            moonSunLight.shadow.mapSize.width = shadowRes;
+            moonSunLight.shadow.mapSize.height = shadowRes;
+            moonSunLight.shadow.camera.near = 2;
+            moonSunLight.shadow.camera.far = 65;
+            const d = 18;
+            moonSunLight.shadow.camera.left = -d;
+            moonSunLight.shadow.camera.right = d;
+            moonSunLight.shadow.camera.top = d;
+            moonSunLight.shadow.camera.bottom = -d;
+            scene.add(moonSunLight);
+
+            // Glowing Twilight Moon / Sunset Orb in the Background Sky
+            const skyMoon = new THREE.Mesh(
+                new THREE.SphereGeometry(5.5, 32, 32),
+                new THREE.MeshBasicMaterial({ color: 0xfda4af, transparent: true, opacity: 0.25 })
+            );
+            skyMoon.position.set(0, 14, -46);
+            scene.add(skyMoon);
+
+            const skyMoonCore = new THREE.Mesh(
+                new THREE.SphereGeometry(3.4, 32, 32),
+                new THREE.MeshBasicMaterial({ color: 0xfff1f2, transparent: true, opacity: 0.55 })
+            );
+            skyMoonCore.position.set(0, 14, -46);
+            scene.add(skyMoonCore);
+
+            // ------------------------------------------------------------------
+            // B. FLOATING ISLAND SANCTUARY & REFLECTIVE STARLIGHT SEA
+            // ------------------------------------------------------------------
+            buildFloatingIsland();
+
+            // ------------------------------------------------------------------
+            // C. CENTRAL HEART ALTAR & PROPOSAL GATE
+            // ------------------------------------------------------------------
+            buildCentralHeartAltar();
+
+            // ------------------------------------------------------------------
+            // D. 4 INTERACTIVE MEMORY BEACONS & CONSTELLATION LIGHT BEAMS
+            // ------------------------------------------------------------------
+            buildMemoryBeacons();
+
+            // ------------------------------------------------------------------
+            // E. PLAYER STARLIGHT ORB SPIRIT & TAP DESTINATION RING
+            // ------------------------------------------------------------------
+            buildPlayerSpirit();
+
+            // ------------------------------------------------------------------
+            // F. AMBIENT FLOATING 3D HEARTS & STARDUST GALAXY
+            // ------------------------------------------------------------------
+            buildAmbientHeartsAndStars();
+
+            // Setup Controls & UI Listeners
+            setupControlsAndUI();
+        }
+
+        function buildFloatingIsland() {
+            // Reflective Starlight Cloud Sea Below the Floating Island
+            const seaGeo = new THREE.CircleGeometry(110, 64);
+            const seaMat = new THREE.MeshStandardMaterial({
+                color: 0x130517,
+                roughness: 0.15,
+                metalness: 0.85
+            });
+            const starSea = new THREE.Mesh(seaGeo, seaMat);
+            starSea.rotation.x = -Math.PI / 2;
+            starSea.position.y = -4.2;
+            scene.add(starSea);
+
+            // Main Floating Island Top Terrace (Walkable Surface)
+            const islandTopGeo = new THREE.CylinderGeometry(14.5, 13.8, 0.8, 64);
+            const islandTopMat = new THREE.MeshStandardMaterial({
+                color: 0x260c22,
+                roughness: 0.55,
+                metalness: 0.25
+            });
+            islandGroundMesh = new THREE.Mesh(islandTopGeo, islandTopMat);
+            islandGroundMesh.position.y = -0.4;
+            islandGroundMesh.receiveShadow = true;
+            scene.add(islandGroundMesh);
+
+            // Golden Rose Rim Border around the Island Terrace
+            const rimGeo = new THREE.TorusGeometry(14.45, 0.14, 16, 96);
+            const rimMat = new THREE.MeshStandardMaterial({
+                color: 0xfda4af,
+                emissive: 0x881337,
+                emissiveIntensity: 0.4,
+                roughness: 0.2,
+                metalness: 0.85
+            });
+            const islandRim = new THREE.Mesh(rimGeo, rimMat);
+            islandRim.rotation.x = Math.PI / 2;
+            islandRim.position.y = 0.02;
+            scene.add(islandRim);
+
+            // Crystalline Floating Rock Underside Cone
+            const undersideGeo = new THREE.ConeGeometry(13.6, 7.5, 24);
+            const undersideMat = new THREE.MeshStandardMaterial({
+                color: 0x19071a,
+                roughness: 0.7,
+                metalness: 0.3,
+                flatShading: true
+            });
+            const underside = new THREE.Mesh(undersideGeo, undersideMat);
+            underside.rotation.x = Math.PI;
+            underside.position.y = -4.55;
+            scene.add(underside);
+
+            // Decorative Golden Rose Archways at North & South
+            const archMat = new THREE.MeshStandardMaterial({
+                color: 0xfde68a,
+                emissive: 0x78350f,
+                emissiveIntensity: 0.35,
+                roughness: 0.22,
+                metalness: 0.9
+            });
+
+            [-12.8, 12.8].forEach((zPos) => {
+                const arch = new THREE.Mesh(
+                    new THREE.TorusGeometry(2.4, 0.12, 14, 48, Math.PI),
+                    archMat
+                );
+                arch.position.set(0, 0, zPos);
+                arch.castShadow = true;
+                scene.add(arch);
+            });
+
+            // Glowing Rose-Gold Crystal Trees & Stepping Stones around Perimeter
+            const treePositions = [
+                [-11.2, -2.5], [11.4, -2.0], [-10.8, 3.2], [11.0, 3.0],
+                [-4.5, -11.5], [4.5, -11.5], [-5.2, 11.2], [5.2, 11.2]
+            ];
+
+            const trunkMat = new THREE.MeshStandardMaterial({ color: 0xfda4af, metalness: 0.7, roughness: 0.3 });
+            const canopyMat = new THREE.MeshPhongMaterial({
+                color: 0xf43f5e,
+                emissive: 0x9f1239,
+                emissiveIntensity: 0.55,
+                shininess: 90
+            });
+
+            treePositions.forEach(([tx, tz], idx) => {
+                const treeGroup = new THREE.Group();
+                treeGroup.position.set(tx, 0, tz);
+
+                const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.18, 2.2, 10), trunkMat);
+                trunk.position.y = 1.1;
+                trunk.castShadow = true;
+                treeGroup.add(trunk);
+
+                const canopy = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95 + (idx % 2) * 0.25, 1), canopyMat);
+                canopy.position.y = 2.55;
+                canopy.castShadow = true;
+                treeGroup.add(canopy);
+
+                scene.add(treeGroup);
+            });
+
+            // Satellite Floating Mini-Islands in the Distance for Depth
+            const satPositions = [
+                [-22, 2.5, -14, 2.8],
+                [23, 3.2, -12, 3.1],
+                [-19, -0.5, 14, 2.2],
+                [20, 1.2, 13, 2.4]
+            ];
+            satPositions.forEach(([sx, sy, sz, sr]) => {
+                const sat = new THREE.Mesh(
+                    new THREE.CylinderGeometry(sr, sr * 0.2, sr * 1.4, 12),
+                    undersideMat
+                );
+                sat.position.set(sx, sy, sz);
+                scene.add(sat);
+            });
+        }
+
+        function buildCentralHeartAltar() {
+            // Marble & Gold Circular Dais at (0, 0, 0)
+            const daisGeo = new THREE.CylinderGeometry(2.6, 3.0, 0.35, 48);
+            const daisMat = new THREE.MeshStandardMaterial({
+                color: 0x3b1233,
+                roughness: 0.25,
+                metalness: 0.65
+            });
+            const dais = new THREE.Mesh(daisGeo, daisMat);
+            dais.position.y = 0.175;
+            dais.receiveShadow = true;
+            scene.add(dais);
+
+            // Glowing Golden Portal Ring around the Central Altar
+            const portalGeo = new THREE.RingGeometry(2.35, 2.58, 64);
+            const portalMat = new THREE.MeshBasicMaterial({
+                color: 0xf43f5e,
+                side: THREE.DoubleSide,
+                transparent: true,
+                opacity: 0.5
+            });
+            altarPortalRing = new THREE.Mesh(portalGeo, portalMat);
+            altarPortalRing.rotation.x = -Math.PI / 2;
+            altarPortalRing.position.y = 0.36;
+            scene.add(altarPortalRing);
+
+            // Central 3D Sculpted Heart Key (Rises & Glows Brightly when all 4 Beacons are lit!)
+            const heartShape = createHeartShape();
+            const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
+                depth: 0.38,
+                bevelEnabled: true,
+                bevelSegments: 10,
+                steps: 2,
+                bevelSize: 0.22,
+                bevelThickness: 0.22
+            });
+            heartGeo.center();
+
+            const heartMat = new THREE.MeshPhongMaterial({
+                color: 0xe11d48,
+                emissive: 0x4c0519,
+                emissiveIntensity: 0.5,
+                specular: 0xffe4e6,
+                shininess: 120,
+                transparent: true,
+                opacity: 0.65
+            });
+
+            centralAltarHeart = new THREE.Mesh(heartGeo, heartMat);
+            centralAltarHeart.position.set(0, 1.85, 0);
+            centralAltarHeart.scale.set(0.65, 0.65, 0.65);
+            centralAltarHeart.castShadow = true;
+            scene.add(centralAltarHeart);
+
+            // Orbiting Crystal Halo Ring around Central Heart
+            centralAltarRing = new THREE.Mesh(
+                new THREE.TorusGeometry(1.35, 0.035, 16, 64),
+                new THREE.MeshBasicMaterial({ color: 0xfde68a, transparent: true, opacity: 0.45 })
+            );
+            centralAltarRing.position.set(0, 1.85, 0);
+            centralAltarRing.rotation.x = Math.PI / 3;
+            scene.add(centralAltarRing);
+
+            centralAltarLight = new THREE.PointLight(0xf43f5e, 1.5, 14);
+            centralAltarLight.position.set(0, 2.4, 0);
+            scene.add(centralAltarLight);
+        }
+
+        function buildMemoryBeacons() {
+            const beaconDataList = getMemoryBeaconsData();
+            const heartShape = createHeartShape();
+            const miniHeartGeo = new THREE.ExtrudeGeometry(heartShape, {
+                depth: 0.2,
+                bevelEnabled: true,
+                bevelSegments: 6,
+                steps: 1,
+                bevelSize: 0.12,
+                bevelThickness: 0.12
+            });
+            miniHeartGeo.center();
+
+            const pedestalMat = new THREE.MeshStandardMaterial({
+                color: 0x2e0e29,
+                roughness: 0.25,
+                metalness: 0.75
+            });
+
+            beaconDataList.forEach((data, idx) => {
+                const group = new THREE.Group();
+                group.position.copy(data.pos);
+                scene.add(group);
+
+                // Stone & Gold Pedestal Pillar
+                const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.85, 1.0, 24), pedestalMat);
+                pillar.position.y = 0.5;
+                pillar.castShadow = true;
+                pillar.receiveShadow = true;
+                group.add(pillar);
+
+                // Ground Proximity Aura Ring
+                const ringMat = new THREE.MeshBasicMaterial({
+                    color: data.color,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.65
+                });
+                const groundRing = new THREE.Mesh(new THREE.RingGeometry(1.35, 1.55, 48), ringMat);
+                groundRing.rotation.x = -Math.PI / 2;
+                groundRing.position.y = 0.03;
+                group.add(groundRing);
+
+                // Floating 3D Crystal Heart above Pedestal
+                const heartMat = new THREE.MeshPhongMaterial({
+                    color: data.color,
+                    emissive: data.color,
+                    emissiveIntensity: 0.35,
+                    specular: 0xffffff,
+                    shininess: 110
+                });
+                const crystalHeart = new THREE.Mesh(miniHeartGeo, heartMat);
+                crystalHeart.position.y = 1.75;
+                crystalHeart.scale.set(0.42, 0.42, 0.42);
+                crystalHeart.castShadow = true;
+                group.add(crystalHeart);
+
+                // Point Light for Beacon
+                const light = new THREE.PointLight(data.color, 1.4, 8);
+                light.position.y = 2.0;
+                group.add(light);
+
+                // Constellation Light Beam connecting this Beacon to the Central Heart Altar (Initially hidden)
+                const startPt = new THREE.Vector3(data.pos.x, 1.85, data.pos.z);
+                const endPt = new THREE.Vector3(0, 2.25, 0);
+                const dist = startPt.distanceTo(endPt);
+
+                const beamGeo = new THREE.CylinderGeometry(0.055, 0.055, dist, 12);
+                beamGeo.translate(0, dist / 2, 0);
+                beamGeo.rotateX(Math.PI / 2);
+
+                const beamMat = new THREE.MeshBasicMaterial({
+                    color: 0xfde68a,
+                    transparent: true,
+                    opacity: 0.0
+                });
+                const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+                beamMesh.position.copy(startPt);
+                beamMesh.lookAt(endPt);
+                scene.add(beamMesh);
+
+                beacons.push({
+                    id: idx,
+                    group,
+                    crystalHeart,
+                    groundRing,
+                    light,
+                    beamMesh,
+                    awakened: false,
+                    pos: data.pos
+                });
+            });
+        }
+
+        function buildPlayerSpirit() {
+            playerGroup = new THREE.Group();
+            playerGroup.position.copy(playerPos);
+            scene.add(playerGroup);
+
+            // Radiant Starlight Core Orb
+            playerCoreMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(0.32, 24, 24),
+                new THREE.MeshBasicMaterial({ color: 0xfff1f2 })
+            );
+            playerGroup.add(playerCoreMesh);
+
+            // Soft Rose-Gold Outer Aura Shell
+            playerHaloMesh = new THREE.Mesh(
+                new THREE.SphereGeometry(0.54, 24, 24),
+                new THREE.MeshBasicMaterial({
+                    color: 0xf43f5e,
+                    transparent: true,
+                    opacity: 0.35
+                })
+            );
+            playerGroup.add(playerHaloMesh);
+
+            // Orbiting Mini Ribbon Ring around Spirit
+            const spiritRing = new THREE.Mesh(
+                new THREE.TorusGeometry(0.62, 0.025, 12, 40),
+                new THREE.MeshBasicMaterial({ color: 0xfde68a })
+            );
+            spiritRing.rotation.x = Math.PI / 2.5;
+            playerGroup.add(spiritRing);
+
+            playerLight = new THREE.PointLight(0xfb7185, 2.2, 10);
+            playerGroup.add(playerLight);
+
+            // Tap-to-Glide Destination Marker Ring on the Island Floor
+            destinationMarkerMesh = new THREE.Mesh(
+                new THREE.RingGeometry(0.35, 0.50, 32),
+                new THREE.MeshBasicMaterial({
+                    color: 0xfde68a,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.0
+                })
+            );
+            destinationMarkerMesh.rotation.x = -Math.PI / 2;
+            destinationMarkerMesh.position.y = 0.04;
+            scene.add(destinationMarkerMesh);
+        }
+
+        function buildAmbientHeartsAndStars() {
+            const isMobileDevice = window.innerWidth < 768;
+            const heartShape = createHeartShape();
+            const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
+                depth: 0.14,
+                bevelEnabled: true,
+                bevelSegments: 3,
+                steps: 1,
+                bevelSize: 0.07,
+                bevelThickness: 0.07
+            });
+            heartGeo.center();
+
+            const palette = [0xf43f5e, 0xfb7185, 0xfbbf24, 0xf472b6, 0xffd1dc];
+
+            // Ambient Floating 3D Hearts drifting around the Sanctuary
+            const heartCount = isMobileDevice ? 24 : 32;
+            for (let i = 0; i < heartCount; i++) {
+                const mat = new THREE.MeshPhongMaterial({
+                    color: palette[i % palette.length],
+                    emissive: 0x3b0718,
+                    shininess: 90
+                });
+                const mesh = new THREE.Mesh(heartGeo, mat);
+                const s = 0.12 + Math.random() * 0.14;
+                mesh.scale.set(s, s, s);
+
+                const angle = Math.random() * Math.PI * 2;
+                const radius = 3.5 + Math.random() * 14.5;
+                const y = 1.4 + Math.random() * 5.5;
+
+                mesh.position.set(Math.cos(angle) * radius, y, Math.sin(angle) * radius);
+                scene.add(mesh);
+
+                ambientHearts.push({
+                    mesh,
+                    baseY: y,
+                    bobSpeed: 1.0 + Math.random() * 1.5,
+                    bobOffset: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.025
+                });
+            }
+
+            // Sparkling Stardust Particles (Tuned for crisp 60fps mobile GPU rendering)
+            const starGeo = new THREE.BufferGeometry();
+            const count = isMobileDevice ? 420 : 650;
+            const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            const cGold = new THREE.Color(0xfde68a);
+            const cRose = new THREE.Color(0xfda4af);
+            const cWhite = new THREE.Color(0xffffff);
+
+            for (let i = 0; i < count; i++) {
+                positions[i * 3] = (Math.random() - 0.5) * 75;
+                positions[i * 3 + 1] = (Math.random() - 0.2) * 35;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 75;
+
+                const picked = i % 3 === 0 ? cGold : (i % 2 === 0 ? cRose : cWhite);
+                colors[i * 3] = picked.r;
+                colors[i * 3 + 1] = picked.g;
+                colors[i * 3 + 2] = picked.b;
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            starGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            starField = new THREE.Points(
+                starGeo,
+                new THREE.PointsMaterial({ size: 0.18, vertexColors: true, transparent: true, opacity: 0.85 })
+            );
+            scene.add(starField);
+        }
+
+        // Spawn 3D Heart Fireworks (Used when awakening beacons and during Grand Finale)
+        function launchHeartFireworkBurst(originPos, count = 34) {
+            const heartShape = createHeartShape();
+            const heartGeo = new THREE.ExtrudeGeometry(heartShape, {
+                depth: 0.16,
+                bevelEnabled: true,
+                bevelSegments: 4,
+                steps: 1,
+                bevelSize: 0.08,
+                bevelThickness: 0.08
+            });
+            heartGeo.center();
+
+            const palette = [0xf43f5e, 0xfb7185, 0xfbbf24, 0xf472b6, 0xfff1f2];
+
+            for (let i = 0; i < count; i++) {
+                const mat = new THREE.MeshPhongMaterial({
+                    color: palette[i % palette.length],
+                    emissive: 0x4c0519,
+                    shininess: 100
+                });
+
+                const mesh = new THREE.Mesh(heartGeo, mat);
+                const s = 0.14 + Math.random() * 0.16;
+                mesh.scale.set(s, s, s);
+                mesh.position.copy(originPos);
+
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI * 0.75;
+                const speed = 0.09 + Math.random() * 0.18;
+
+                const velocity = new THREE.Vector3(
+                    Math.sin(phi) * Math.cos(theta) * speed,
+                    Math.cos(phi) * speed + 0.08,
+                    Math.sin(phi) * Math.sin(theta) * speed
+                );
+
+                scene.add(mesh);
+                fireworkHearts.push({
+                    mesh,
+                    velocity,
+                    rotSpeed: new THREE.Vector3(
+                        (Math.random() - 0.5) * 0.12,
+                        (Math.random() - 0.5) * 0.12,
+                        (Math.random() - 0.5) * 0.12
+                    ),
+                    life: 1.0
+                });
+            }
+        }
+
+        /*************************************************************************
+         * 4. BEACON AWAKENING, HEART ALTAR & PROPOSAL MODAL LOGIC
+         *************************************************************************/
+        function awakenMemoryBeacon(beaconIndex) {
+            const beacon = beacons[beaconIndex];
+            if (!beacon || beacon.awakened) return;
+
+            beacon.awakened = true;
+            awakenedCount++;
+            tapDestination = null;
+            destinationMarkerMesh.material.opacity = 0;
+
+            audio.playBeaconAwaken(beaconIndex);
+
+            // Illuminate Beacon Crystal, Ground Ring & Constellation Beam
+            beacon.crystalHeart.material.emissiveIntensity = 1.1;
+            beacon.crystalHeart.scale.set(0.58, 0.58, 0.58);
+            beacon.groundRing.material.color.setHex(0xfde68a);
+            beacon.groundRing.material.opacity = 0.95;
+            beacon.light.intensity = 3.2;
+            beacon.beamMesh.material.opacity = 0.78;
+
+            // Update Top HUD Progress Dots
+            const dotEl = document.querySelector(`[data-dot="${beaconIndex}"]`);
+            if (dotEl) {
+                dotEl.classList.remove('bg-white/20');
+                dotEl.classList.add('bg-rose-400', 'scale-125', 'shadow-md');
+            }
+            document.getElementById('progress-label').textContent = `${awakenedCount} / 4 Beacons · For Lylia`;
+
+            // Burst of 3D Hearts at the Beacon
+            launchHeartFireworkBurst(new THREE.Vector3(beacon.pos.x, 1.8, beacon.pos.z), 28);
+
+            // Check if all 4 Beacons are now connected to the Central Heart Altar
+            if (awakenedCount === 4) {
+                unlockCentralHeartAltar();
+            }
+
+            // Show the Romantic Memory Card
+            const stories = getMemoryBeaconsData();
+            const story = stories[beaconIndex];
+
+            document.getElementById('memory-badge').textContent = story.badge;
+            document.getElementById('memory-title').textContent = story.title;
+            document.getElementById('memory-body').textContent = story.body;
+            document.getElementById('continue-btn-label').textContent =
+                awakenedCount === 4 ? 'Approach the Heart Altar ✨' : 'Continue Exploring';
+
+            isModalPaused = true;
+            const modal = document.getElementById('memory-modal');
+            const cardInner = document.getElementById('memory-card-inner');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.classList.add('opacity-100', 'pointer-events-auto');
+            cardInner.classList.remove('scale-95');
+            cardInner.classList.add('scale-100');
+        }
+
+        function unlockCentralHeartAltar() {
+            altarUnlocked = true;
+            centralAltarHeart.material.opacity = 1.0;
+            centralAltarHeart.material.emissiveIntensity = 1.15;
+            centralAltarHeart.scale.set(0.95, 0.95, 0.95);
+            centralAltarRing.material.opacity = 0.95;
+            centralAltarLight.intensity = 4.2;
+            altarPortalRing.material.color.setHex(0xfde68a);
+            altarPortalRing.material.opacity = 0.95;
+
+            document.getElementById('hint-pill-text').innerHTML =
+                `<span>💖 All 4 Beacons Lit, Lylia! Glide to the Central Heart Altar!</span>`;
+        }
+
+        function openGrandFinaleProposal() {
+            if (isModalPaused) return;
+            isModalPaused = true;
+            tapDestination = null;
+            destinationMarkerMesh.material.opacity = 0;
+
+            audio.playBeaconAwaken(3);
+            launchHeartFireworkBurst(new THREE.Vector3(0, 2.2, 0), 42);
+
+            document.getElementById('proposal-headline').textContent = `Lylia, will you be my girl? ❤️`;
+            document.getElementById('proposal-subtext').textContent = `Every starlight beacon on this island leads straight to you, Lylia. You are my favorite adventure, my calm, and my happiest place.`;
+            document.getElementById('celebration-headline').textContent = `Lylia & Me — Forever Starts Tonight ✨`;
+            document.getElementById('celebration-subtext').textContent = `The entire Starlight Sanctuary is celebrating with us, Lylia! Thank you for making me the happiest person in the universe. ❤️`;
+
+            const finaleModal = document.getElementById('finale-modal');
+            finaleModal.classList.remove('opacity-0', 'pointer-events-none');
+            finaleModal.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        /*************************************************************************
+         * 5. CONTROLS (TOUCH TAP-TO-GLIDE, VIRTUAL JOYSTICK, WASD) & "NO" DODGE
+         *************************************************************************/
+        function setupControlsAndUI() {
+            // Start Screen Launch (Unlocks Web Audio cleanly on Lylia's first tap)
+            document.getElementById('start-adventure-btn').addEventListener('click', () => {
+                gameStarted = true;
+                audio.init();
+                audio.playBeaconAwaken(0);
+
+                const startScreen = document.getElementById('start-screen');
+                startScreen.classList.add('opacity-0', 'pointer-events-none');
+
+                document.getElementById('game-hud').classList.remove('opacity-0');
+                document.getElementById('controls-hint').classList.remove('opacity-0');
+            });
+
+            // Continue Exploring after reading a Memory Beacon card
+            document.getElementById('continue-explore-btn').addEventListener('click', () => {
+                const modal = document.getElementById('memory-modal');
+                const cardInner = document.getElementById('memory-card-inner');
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modal.classList.remove('opacity-100', 'pointer-events-auto');
+                cardInner.classList.add('scale-95');
+                cardInner.classList.remove('scale-100');
+                isModalPaused = false;
+
+                // If all 4 beacons are awakened, smoothly auto-guide her spirit toward the central Heart Altar
+                if (awakenedCount === 4 && !isCelebrationMode) {
+                    tapDestination = new THREE.Vector3(0, 0.85, 0);
+                    destinationMarkerMesh.position.set(0, 0.37, 0);
+                    destinationMarkerMesh.material.opacity = 0.85;
+                }
+            });
+
+            // Keyboard WASD + Arrow Keys
+            window.addEventListener('keydown', (e) => {
+                const k = e.key.toLowerCase();
+                if (k in keysPressed) keysPressed[k] = true;
+            });
+
+            window.addEventListener('keyup', (e) => {
+                const k = e.key.toLowerCase();
+                if (k in keysPressed) keysPressed[k] = false;
+            });
+
+            // Pointer / Touch Tap-to-Glide & Virtual Joystick
+            const canvasEl = renderer.domElement;
+            const joystickZone = document.getElementById('joystick-zone');
+            const joystickKnob = document.getElementById('joystick-knob');
+
+            let pointerStart = null;
+            let isDraggingJoystick = false;
+
+            canvasEl.addEventListener('pointerdown', (e) => {
+                if (!gameStarted || isModalPaused) return;
+                pointerStart = { x: e.clientX, y: e.clientY };
+                isDraggingJoystick = false;
+            });
+
+            canvasEl.addEventListener('pointermove', (e) => {
+                if (!pointerStart || !gameStarted || isModalPaused) return;
+                const dx = e.clientX - pointerStart.x;
+                const dy = e.clientY - pointerStart.y;
+                const dist = Math.hypot(dx, dy);
+
+                if (dist > 14) {
+                    isDraggingJoystick = true;
+                    tapDestination = null;
+                    destinationMarkerMesh.material.opacity = 0;
+
+                    joystickZone.style.left = `${pointerStart.x}px`;
+                    joystickZone.style.top = `${pointerStart.y}px`;
+                    joystickZone.style.opacity = '1';
+
+                    const maxRadius = 38;
+                    const clampedDist = Math.min(dist, maxRadius);
+                    const angle = Math.atan2(dy, dx);
+
+                    const knobX = Math.cos(angle) * clampedDist;
+                    const knobY = Math.sin(angle) * clampedDist;
+                    joystickKnob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+
+                    joystickVector.x = knobX / maxRadius;
+                    joystickVector.y = knobY / maxRadius;
+                }
+            });
+
+            function endPointerGesture(e) {
+                if (!pointerStart) return;
+
+                if (!isDraggingJoystick && gameStarted && !isModalPaused) {
+                    // Single Tap / Click -> Raycast onto the Island Surface and Glide There!
+                    pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                    raycaster.setFromCamera(pointerNDC, camera);
+
+                    const hits = raycaster.intersectObject(islandGroundMesh);
+                    if (hits.length > 0) {
+                        const pt = hits[0].point;
+                        // Keep within walkable island radius (13.2)
+                        const radial = Math.hypot(pt.x, pt.z);
+                        if (radial > 13.2) {
+                            pt.x = (pt.x / radial) * 13.2;
+                            pt.z = (pt.z / radial) * 13.2;
+                        }
+                        tapDestination = new THREE.Vector3(pt.x, 0.85, pt.z);
+                        destinationMarkerMesh.position.set(pt.x, 0.04, pt.z);
+                        destinationMarkerMesh.material.opacity = 0.85;
+                    }
+                }
+
+                pointerStart = null;
+                isDraggingJoystick = false;
+                joystickVector = { x: 0, y: 0 };
+                joystickZone.style.opacity = '0';
+                joystickKnob.style.transform = 'translate(-50%, -50%)';
+            }
+
+            canvasEl.addEventListener('pointerup', endPointerGesture);
+            canvasEl.addEventListener('pointercancel', endPointerGesture);
+
+            // Sound Toggle
+            const soundBtn = document.getElementById('sound-toggle-btn');
+            soundBtn.addEventListener('click', () => {
+                audio.enabled = !audio.enabled;
+                soundBtn.style.opacity = audio.enabled ? '1' : '0.4';
+                if (audio.enabled) audio.playDodgeBoop();
+            });
+
+            // ------------------------------------------------------------------
+            // UNCLICKABLE DODGING "NO" BUTTON + GRAND CELEBRATION FINALE
+            // ------------------------------------------------------------------
+            const noBtn = document.getElementById('no-btn');
+            const yesBtn = document.getElementById('yes-btn');
+            const teaseToast = document.getElementById('tease-toast');
+            const noHintFooter = document.getElementById('no-hint-footer');
+
+            let noAttempts = 0;
+            let isNoDetached = false;
+            let toastTimeout = null;
+
+            const dodgeLabels = [
+                "Nice try, Lylia! 🏃💨",
+                "Destino says YES, Lylia ✨",
+                "Error 404: 'No' Not Found ❤️",
+                "Oops, too slow, Lylia! 🏹",
+                "Cupid blocked that tap! 💘",
+                "Sanctuary says YES only 😉",
+                "Tap the pink button, Lylia! 👉"
+            ];
+
+            const dodgeToasts = [
+                "Nice try, Lylia! 🏃💨 The sanctuary only knows YES ❤️",
+                "Destino says YES, Lylia ✨ 'No' doesn't exist in this universe!",
+                "Oops, too slow, Lylia! 🏹 Cupid moved it out of your way!",
+                "Cupid blocked that tap! 💘 Look how much 'Yes' is glowing!"
+            ];
+
+            function showTeaseToast(text) {
+                teaseToast.textContent = text;
+                teaseToast.classList.remove('opacity-0', '-translate-y-2');
+                teaseToast.classList.add('opacity-100', 'translate-y-0');
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    teaseToast.classList.remove('opacity-100', 'translate-y-0');
+                    teaseToast.classList.add('opacity-0', '-translate-y-2');
+                }, 2500);
+            }
+
+            function evadeNoButton(e) {
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                noAttempts++;
+                audio.playDodgeBoop();
+
+                noHintFooter.classList.remove('opacity-0');
+                noHintFooter.classList.add('opacity-100');
+
+                noBtn.textContent = dodgeLabels[(noAttempts - 1) % dodgeLabels.length];
+                showTeaseToast(dodgeToasts[(noAttempts - 1) % dodgeToasts.length]);
+
+                // Grow the "Yes, I will!" button larger each time
+                const scale = Math.min(1.42, 1 + noAttempts * 0.065);
+                yesBtn.style.transform = `scale(${scale})`;
+
+                if (!isNoDetached) {
+                    const rect = noBtn.getBoundingClientRect();
+                    noBtn.style.position = 'fixed';
+                    noBtn.style.left = `${rect.left}px`;
+                    noBtn.style.top = `${rect.top}px`;
+                    noBtn.style.zIndex = '60';
+                    document.body.appendChild(noBtn);
+                    isNoDetached = true;
+                }
+
+                const btnRect = noBtn.getBoundingClientRect();
+                const yesRect = yesBtn.getBoundingClientRect();
+                const pad = 22;
+                const maxX = window.innerWidth - btnRect.width - pad;
+                const maxY = window.innerHeight - btnRect.height - pad;
+
+                let nx, ny, tries = 0;
+                do {
+                    nx = Math.max(pad, Math.random() * maxX);
+                    ny = Math.max(76, Math.random() * maxY);
+                    tries++;
+                } while (
+                    tries < 25 &&
+                    nx + btnRect.width > yesRect.left - 45 &&
+                    nx < yesRect.right + 45 &&
+                    ny + btnRect.height > yesRect.top - 45 &&
+                    ny < yesRect.bottom + 45
+                );
+
+                noBtn.style.left = `${nx}px`;
+                noBtn.style.top = `${ny}px`;
+            }
+
+            noBtn.addEventListener('mouseenter', evadeNoButton);
+            noBtn.addEventListener('touchstart', evadeNoButton, { passive: false });
+            noBtn.addEventListener('click', evadeNoButton);
+
+            // "Yes, I will!" -> Celebration Fireworks & Free Roam Mode!
+            yesBtn.addEventListener('click', () => {
+                isCelebrationMode = true;
+                audio.playCelebrationMelody();
+
+                if (isNoDetached) {
+                    noBtn.style.opacity = '0';
+                    noBtn.style.pointerEvents = 'none';
+                }
+
+                document.getElementById('finale-question-card').classList.add('hidden');
+                document.getElementById('finale-celebration-card').classList.remove('hidden');
+
+                // Multi-point Heart Firework Show across the Island!
+                launchHeartFireworkBurst(new THREE.Vector3(0, 2.5, 0), 48);
+                setTimeout(() => launchHeartFireworkBurst(new THREE.Vector3(-6, 3.0, -5), 32), 350);
+                setTimeout(() => launchHeartFireworkBurst(new THREE.Vector3(6, 3.0, -5), 32), 650);
+                setTimeout(() => launchHeartFireworkBurst(new THREE.Vector3(0, 3.5, 5), 36), 950);
+            });
+
+            document.getElementById('launch-fireworks-btn').addEventListener('click', () => {
+                audio.playCelebrationMelody();
+                launchHeartFireworkBurst(new THREE.Vector3(
+                    (Math.random() - 0.5) * 10,
+                    2.5 + Math.random() * 2,
+                    (Math.random() - 0.5) * 10
+                ), 42);
+            });
+
+            document.getElementById('free-roam-btn').addEventListener('click', () => {
+                const finaleModal = document.getElementById('finale-modal');
+                finaleModal.classList.add('opacity-0', 'pointer-events-none');
+                finaleModal.classList.remove('opacity-100', 'pointer-events-auto');
+                isModalPaused = false;
+                document.getElementById('hint-pill-text').innerHTML =
+                    `<span>💖 Free Roam Celebration! Glide anywhere on the island, Lylia ✨</span>`;
+            });
+
+            // Responsive Resize & Portrait/Landscape Orientation Adaptation
+            function handleViewportResize() {
+                if (!camera || !renderer) return;
+                const w = window.innerWidth;
+                const h = window.innerHeight;
+                const aspect = w / h;
+                camera.aspect = aspect;
+                camera.fov = aspect < 1 ? 56 : 46;
+                camera.updateProjectionMatrix();
+                renderer.setSize(w, h);
+            }
+
+            window.addEventListener('resize', handleViewportResize);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(handleViewportResize, 120);
+            });
+        }
+
+        /*************************************************************************
+         * 6. MAIN 60FPS GAME & RENDER LOOP
+         *************************************************************************/
+        const clock = new THREE.Clock();
+        let fireworkTimer = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.05);
+            const elapsed = clock.getElapsedTime();
+
+            // 1. Update Player Starlight Spirit Movement
+            if (gameStarted && !isModalPaused) {
+                const moveSpeed = 7.4;
+                let inputX = 0;
+                let inputZ = 0;
+
+                if (keysPressed.a || keysPressed.arrowleft) inputX -= 1;
+                if (keysPressed.d || keysPressed.arrowright) inputX += 1;
+                if (keysPressed.w || keysPressed.arrowup) inputZ -= 1;
+                if (keysPressed.s || keysPressed.arrowdown) inputZ += 1;
+
+                if (Math.abs(joystickVector.x) > 0.05 || Math.abs(joystickVector.y) > 0.05) {
+                    inputX = joystickVector.x;
+                    inputZ = joystickVector.y;
+                }
+
+                if (inputX !== 0 || inputZ !== 0) {
+                    tapDestination = null;
+                    destinationMarkerMesh.material.opacity = 0;
+                    const len = Math.hypot(inputX, inputZ);
+                    playerVel.x = (inputX / Math.max(1, len)) * moveSpeed;
+                    playerVel.z = (inputZ / Math.max(1, len)) * moveSpeed;
+                } else if (tapDestination) {
+                    const dx = tapDestination.x - playerPos.x;
+                    const dz = tapDestination.z - playerPos.z;
+                    const dist = Math.hypot(dx, dz);
+
+                    if (dist > 0.22) {
+                        playerVel.x = (dx / dist) * moveSpeed;
+                        playerVel.z = (dz / dist) * moveSpeed;
+                    } else {
+                        tapDestination = null;
+                        destinationMarkerMesh.material.opacity = 0;
+                        playerVel.set(0, 0, 0);
+                    }
+                } else {
+                    playerVel.multiplyScalar(0.84);
+                }
+
+                playerPos.x += playerVel.x * dt;
+                playerPos.z += playerVel.z * dt;
+
+                // Keep player safely inside the floating island boundary (radius 13.4)
+                const radialDist = Math.hypot(playerPos.x, playerPos.z);
+                if (radialDist > 13.4) {
+                    playerPos.x = (playerPos.x / radialDist) * 13.4;
+                    playerPos.z = (playerPos.z / radialDist) * 13.4;
+                }
+
+                // Check proximity to each of the 4 Memory Beacons
+                beacons.forEach((b) => {
+                    if (!b.awakened) {
+                        const d = Math.hypot(playerPos.x - b.pos.x, playerPos.z - b.pos.z);
+                        if (d < 1.95) {
+                            awakenMemoryBeacon(b.id);
+                        }
+                    }
+                });
+
+                // Check proximity to the Central Heart Altar once all 4 beacons are lit
+                if (altarUnlocked && !isCelebrationMode) {
+                    const altarDist = Math.hypot(playerPos.x, playerPos.z);
+                    if (altarDist < 2.45) {
+                        openGrandFinaleProposal();
+                    }
+                }
+            }
+
+            // 2. Animate Player Spirit Hover & Glow
+            if (playerGroup) {
+                playerGroup.position.x = playerPos.x;
+                playerGroup.position.z = playerPos.z;
+                playerGroup.position.y = 0.85 + Math.sin(elapsed * 3.4) * 0.14;
+                playerGroup.rotation.y = elapsed * 1.8;
+
+                const pulseScale = 1 + Math.sin(elapsed * 5) * 0.08;
+                playerHaloMesh.scale.set(pulseScale, pulseScale, pulseScale);
+            }
+
+            // 3. Smooth Portrait- & Landscape-Aware Camera Follow
+            if (camera) {
+                const aspect = window.innerWidth / window.innerHeight;
+                const isPortrait = aspect < 1;
+                const camOffsetY = isPortrait ? 14.5 : 10.4;
+                const camOffsetZ = isPortrait ? 17.8 : 12.2;
+                const followFactor = isPortrait ? 0.52 : 0.68;
+
+                const targetCamX = playerPos.x * followFactor;
+                const targetCamY = camOffsetY;
+                const targetCamZ = playerPos.z * followFactor + camOffsetZ;
+
+                camera.position.x += (targetCamX - camera.position.x) * 0.06;
+                camera.position.y += (targetCamY - camera.position.y) * 0.06;
+                camera.position.z += (targetCamZ - camera.position.z) * 0.06;
+
+                camera.lookAt(playerPos.x * 0.5, 0.8, playerPos.z * 0.5 - 1.0);
+            }
+
+            // 4. Animate Central Heart Altar & 4 Memory Beacons
+            if (centralAltarHeart) {
+                const beatSpeed = altarUnlocked ? 4.4 : 2.4;
+                const beat = Math.pow(Math.sin(elapsed * beatSpeed), 6) * 0.12;
+                const base = altarUnlocked ? 0.95 : 0.65;
+                centralAltarHeart.scale.set(base + beat, base + beat, base + beat);
+                centralAltarHeart.position.y = (altarUnlocked ? 2.25 : 1.85) + Math.sin(elapsed * 2.0) * 0.15;
+                centralAltarHeart.rotation.y = elapsed * (altarUnlocked ? 1.4 : 0.6);
+                centralAltarRing.rotation.z = elapsed * 1.1;
+            }
+
+            beacons.forEach((b, idx) => {
+                b.crystalHeart.rotation.y = elapsed * 1.6 + idx;
+                b.crystalHeart.position.y = 1.75 + Math.sin(elapsed * 2.5 + idx) * 0.14;
+            });
+
+            // 5. Animate Ambient Floating Hearts & Stardust
+            ambientHearts.forEach((item) => {
+                item.mesh.position.y = item.baseY + Math.sin(elapsed * item.bobSpeed + item.bobOffset) * 0.45;
+                item.mesh.rotation.y += item.rotSpeed;
+            });
+
+            if (starField) {
+                starField.rotation.y = elapsed * 0.02;
+            }
+
+            // 6. Update Firework 3D Heart Particles
+            for (let i = fireworkHearts.length - 1; i >= 0; i--) {
+                const f = fireworkHearts[i];
+                f.mesh.position.add(f.velocity);
+                f.velocity.y -= 0.0022; // gentle gravity
+                f.mesh.rotation.x += f.rotSpeed.x;
+                f.mesh.rotation.y += f.rotSpeed.y;
+                f.mesh.rotation.z += f.rotSpeed.z;
+                f.life -= 0.011;
+
+                if (f.life <= 0) {
+                    scene.remove(f.mesh);
+                    fireworkHearts.splice(i, 1);
+                } else {
+                    const s = Math.max(0.001, f.life * 0.22);
+                    f.mesh.scale.set(s, s, s);
+                }
+            }
+
+            // Periodic celebratory heart fireworks during Free Roam Celebration
+            if (isCelebrationMode && !isModalPaused) {
+                fireworkTimer += dt;
+                if (fireworkTimer > 2.4) {
+                    fireworkTimer = 0;
+                    launchHeartFireworkBurst(
+                        new THREE.Vector3((Math.random() - 0.5) * 14, 2.5, (Math.random() - 0.5) * 14),
+                        24
+                    );
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            initSanctuaryWorld();
+            animate();
+        };
+    </script>
+</body>
+</html>
