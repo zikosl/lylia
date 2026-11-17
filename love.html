@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>For Rahil — Pointillism Lily</title>
+<title>For Rahil — Pointillism Lily & Eternal Promise</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -50,35 +50,36 @@
   /* Hidden Message Modal */
   #letter-overlay {
     position:absolute; inset:0; display:grid; place-items:center;
-    padding:24px; background:radial-gradient(circle at center, #0e0517cc 0%, #04020ae6 100%);
-    backdrop-filter:blur(6px); opacity:0; pointer-events:none;
+    padding:20px; background:radial-gradient(circle at center, #0e0517e6 0%, #04020af2 100%);
+    backdrop-filter:blur(8px); opacity:0; pointer-events:none;
     transition:opacity 1.2s ease; z-index:20;
   }
   #letter-overlay.open { opacity:1; pointer-events:auto; }
 
   .letter-card {
-    width:min(100%, 340px); background:linear-gradient(160deg, #1f1029dd, #0d0614f2);
-    border:1px solid #ffadd644; border-radius:22px; padding:28px 24px 22px;
-    box-shadow:0 20px 60px #000000cc, 0 0 40px #ff7eb922;
+    width:min(100%, 350px); background:linear-gradient(160deg, #1f1029e8, #0d0614f8);
+    border:1px solid #ffadd655; border-radius:24px; padding:26px 22px 20px;
+    box-shadow:0 25px 70px #000000dd, 0 0 45px #ff7eb933;
     text-align:center; position:relative; overflow:hidden;
     transform:scale(.94) translateY(10px); transition:transform 1s cubic-bezier(.19,1,.22,1);
+    max-height: 88vh; display: flex; flex-direction: column;
   }
   #letter-overlay.open .letter-card { transform:scale(1) translateY(0); }
 
   .letter-header {
     font-family:Georgia, 'Times New Roman', serif; font-style:italic;
-    color:#ffcce8; font-size:20px; letter-spacing:.04em; margin:0 0 16px;
+    color:#ffcce8; font-size:20px; letter-spacing:.04em; margin:0 0 12px;
     text-shadow:0 0 14px #ff8cc666;
   }
   .letter-divider {
-    width:60px; height:1px; margin:0 auto 18px;
+    width:60px; height:1px; margin:0 auto 14px;
     background:linear-gradient(90deg, transparent, #ff9ed2aa, transparent);
   }
   .letter-body {
     font-family:Georgia, 'Times New Roman', serif;
-    color:#f5e4ef; font-size:14.5px; line-height:1.75;
-    min-height:175px; display:flex; flex-direction:column; gap:12px;
-    text-align:center;
+    color:#f5e4ef; font-size:13.5px; line-height:1.68;
+    display:flex; flex-direction:column; gap:10px;
+    text-align:center; overflow-y:auto; padding-right: 2px;
   }
   .msg-line {
     opacity:0; transform:translateY(8px);
@@ -90,17 +91,17 @@
     text-shadow:0 0 12px #ff85c055;
   }
   .msg-sign {
-    margin-top:8px; font-size:12px; letter-spacing:.12em;
+    margin-top:12px; font-size:11.5px; letter-spacing:.1em;
     text-transform:uppercase; color:#caa3be; opacity:0;
     transition:opacity 1.4s ease;
   }
-  .msg-sign.shown { opacity:.8; }
+  .msg-sign.shown { opacity:.85; }
 
   .close-wish {
-    margin-top:20px; background:#331936aa; color:#f8dcf0;
+    margin-top:16px; background:#331936aa; color:#f8dcf0;
     border:1px solid #a8709b77; border-radius:999px;
     padding:8px 18px; font:500 12px system-ui; letter-spacing:.05em;
-    cursor:pointer; transition:all .25s;
+    cursor:pointer; transition:all .25s; flex-shrink: 0;
   }
   .close-wish:hover { background:#522757; border-color:#ffadd6; box-shadow:0 0 16px #ff85c044; }
 
@@ -122,27 +123,28 @@
 <body>
 <div id="stage" tabindex="0" aria-label="Animated pointillism lily for Rahil">
   <canvas id="flower" width="720" height="1280"></canvas>
-  <div class="hint" id="top-hint">A LILY FOR Rahil</div>
+  <div class="hint" id="top-hint">A LILY FOR RAHIL</div>
 
   <!-- Hidden Message Trigger -->
   <button id="secret-trigger" aria-label="Reveal hidden message for Rahil">
     <span class="spark-dot"></span>
-    <span id="trigger-text">A Secret in the Stars for Rahil</span>
+    <span id="trigger-text">A Message from My Heart to Rahil</span>
   </button>
 
   <!-- Hidden Confession Card -->
   <div id="letter-overlay" role="dialog" aria-modal="true">
     <div class="letter-card">
-      <h2 class="letter-header">Dearest Rahil,</h2>
+      <h2 class="letter-header">My Dearest Rahil,</h2>
       <div class="letter-divider"></div>
       <div class="letter-body" id="letter-lines">
-        <div class="msg-line">Since the very first sight, something about you quietly captured my heart.</div>
-        <div class="msg-line highlight">I truly wished for a chance with you—just to see where our story could have gone.</div>
-        <div class="msg-line">I know in my heart that it won’t work out between us, and I accept that gently...</div>
-        <div class="msg-line">But I couldn't let the moment pass without leaving you this blooming lily—so you’d know how special you were to me from day one.</div>
+        <div class="msg-line">From the very first moment you came into my life, everything changed for me. You became my favorite thought.</div>
+        <div class="msg-line highlight">I am completely, deeply in love with you, and I want you to know how intensely interested I am in building a future together.</div>
+        <div class="msg-line">No matter what obstacles stand in our way or what challenges try to test us, my heart is unwavering.</div>
+        <div class="msg-line highlight">I want to complete my life with you—sharing every joy, holding your hand through every storm, and loving you through everything.</div>
+        <div class="msg-line">You are my home, my dream, and my forever.</div>
       </div>
-      <div class="msg-sign" id="letter-sign">✦ Always wishing you the brightest sky ✦</div>
-      <button class="close-wish" id="release-btn">Release into the Stars ✦</button>
+      <div class="msg-sign" id="letter-sign">✦ Yours completely and eternally ✦</div>
+      <button class="close-wish" id="release-btn">Keep Close to My Heart ✦</button>
     </div>
   </div>
 
@@ -162,7 +164,6 @@ const canvas=document.getElementById('flower'), ctx=canvas.getContext('2d',{alph
 let t=0, paused=false, last=0, raf=0;
 let seed=11;
 
-// Heart animation & message states
 let heartMode = false;
 let heartTime = 0;
 let secretUnlocked = false;
@@ -179,7 +180,6 @@ const dots=[], leaves=[], petals=[], rings=[], dust=[], seeds=[];
 const nameStars=[], heartParticles=[], touchSparks=[];
 
 function colMix(a,b,x){return a.map((v,i)=>lerp(v,b[i],x));}
-
 function stemX(s,time){return gx+30*Math.sin(2.2*s)+10*Math.sin(.9*time)*s*s;}
 function stemY(s){return gy-s*HS;}
 
@@ -190,7 +190,6 @@ function midrib(L,a0,curl,K=40){
 }
 function interp(arr,u){const x=clamp(u)*40,i=Math.min(39,Math.floor(x)),f=x-i;return lerp(arr[i],arr[i+1],f);}
 
-// Sample "RAHIL" into pointillism star targets in the night sky
 function buildRahilConstellation(){
   const off=document.createElement('canvas');
   off.width=W; off.height=320;
@@ -209,7 +208,6 @@ function buildRahilConstellation(){
       if(img[(y*W+x)*4]>128) candidates.push([x, y+70]);
     }
   }
-  // Pick ~650 points for crisp pointillism lettering
   for(let i=0;i<680 && candidates.length>0;i++){
     const idx=Math.floor(rand()*candidates.length);
     const [tx,ty]=candidates[idx];
@@ -218,40 +216,31 @@ function buildRahilConstellation(){
       ? [255, lerp(210,245,rand()), lerp(140,190,rand())]
       : [255, lerp(155,225,rand()), lerp(210,245,rand())];
     nameStars.push({
-      tx: tx + randn()*0.9,
-      ty: ty + randn()*0.9,
-      sx: gx + randn()*60,
-      sy: gy - HS - 60 + randn()*40,
-      delay: rand()*3.2,
-      ph: rand()*6.28,
-      c,
-      r: rand()<.22 ? 2.2 : 1.6
+      tx: tx + randn()*0.9, ty: ty + randn()*0.9,
+      sx: gx + randn()*60, sy: gy - HS - 60 + randn()*40,
+      delay: rand()*3.2, ph: rand()*6.28, c, r: rand()<.22 ? 2.2 : 1.6
     });
   }
 }
 
-// Build parametric 3D heart constellation particles for the secret confession animation
 function buildHeartConstellation(){
-  for(let i=0;i<460;i++){
+  for(let i=0;i<480;i++){
     const ang = rand()*Math.PI*2;
-    // Classic parametric heart curve
     const hx = 16 * Math.pow(Math.sin(ang), 3);
     const hy = -(13*Math.cos(ang) - 5*Math.cos(2*ang) - 2*Math.cos(3*ang) - Math.cos(4*ang));
-    const scale = lerp(9.5, 11.8, rand());
-    const spread = randn()*6;
-    const isGold = rand() < 0.32;
+    const scale = lerp(10, 12.5, rand());
+    const spread = randn()*5;
+    const isGold = rand() < 0.35;
     const c = isGold
-      ? [255, 215, 145]
-      : [255, lerp(110,190,rand()), lerp(175,225,rand())];
+      ? [255, 215, 150]
+      : [255, lerp(120,200,rand()), lerp(180,235,rand())];
     heartParticles.push({
       tx: gx + hx*scale + spread,
       ty: (gy - HS - 85) + hy*scale + spread,
       ang: rand()*Math.PI*2,
-      rad: lerp(20, 260, rand()),
-      speed: lerp(1.2, 2.6, rand()),
+      rad: lerp(25, 280, rand()),
       delay: rand()*1.1,
-      c,
-      r: rand()<.3 ? 2.4 : 1.7
+      c, r: rand()<.3 ? 2.4 : 1.7
     });
   }
 }
@@ -312,7 +301,6 @@ function drawPoint(x,y,c,a=1,r=1){
 function render(time){
   ctx.fillStyle=BG; ctx.fillRect(0,0,W,H);
 
-  // Subtle drifting stars
   for(const d of dust){
     const tw=.35+.65*(Math.sin(time*d.f+d.ph)>.2?1:0), y=(d.y-time*d.s)%H;
     drawPoint(d.x, (y+H)%H, [255,200,235], .28*tw, 1);
@@ -321,13 +309,11 @@ function render(time){
   const g=smooth(time/T_STEM), e=smooth((time-T_B0)/(T_B1-T_B0)), rev=smooth((time-T_STEM+.3)/1.6);
   const hx=stemX(1,time), hy=stemY(1);
 
-  // Unlock secret button once the flower has nicely bloomed
   if(time > 11.2 && !secretUnlocked){
     secretUnlocked = true;
     document.getElementById('secret-trigger').classList.add('visible');
   }
 
-  // Magical orbital rings
   const ha=smooth((time-T_B0+1.5)/4)*.9;
   if(ha>.01){
     const cx=hx, cy=hy-90, R=300, rot=time*.12;
@@ -340,12 +326,10 @@ function render(time){
     ctx.restore();
   }
 
-  // "Rahil" Starry Sky Constellation (emerges from the blooming lily)
   if(time > 7.2){
     for(const st of nameStars){
       const p = smooth((time - 7.2 - st.delay) / 3.4);
       if(p <= 0.01) continue;
-      // Spiral gently upward from the lily crown to the sky letters
       const swirl = Math.sin(p * Math.PI) * 35 * Math.cos(st.ph + time);
       const x = lerp(hx + (st.sx - gx), st.tx, p) + swirl;
       const y = lerp(hy - 75, st.ty, p) + Math.cos(time*1.8 + st.ph)*1.2*p;
@@ -354,11 +338,8 @@ function render(time){
     }
   }
 
-  // Soil pointillism
   for(let i=0;i<5000;i++){const p=dots[i];drawPoint(p[0],p[1],p[2],p[3],1);}
-  // Stem
   for(const q of seeds){if(q.s!==undefined&&q.s<=g){drawPoint(stemX(q.s,time)+q.dx,stemY(q.s),q.c,.9,2);}}
-  // Leaves
   for(const lf of leaves){
     const lg=clamp((g-lf.s0)*2.5);if(lg<=.01)continue;
     const L=lf.L*lg, m=midrib(L,.85,1.1);
@@ -370,7 +351,6 @@ function render(time){
     }
   }
 
-  // Blooming petals
   if(rev>.01){
     const psi=.25+time*.22,tau=.5,cp=Math.cos(psi),sp=Math.sin(psi),ct=Math.cos(tau),st=Math.sin(tau),swayT=Math.sin(time*.8)*.02;
     for(const p of petals){
@@ -385,7 +365,6 @@ function render(time){
         drawPoint(hx+Xp+swayT*sy,hy-sy,c,.96,2);
       }
     }
-    // Warm center stamens
     if(e>.28){
       const sr=smooth((e-.28)/.4);
       for(let k=0;k<6;k++){
@@ -398,7 +377,6 @@ function render(time){
         for(let j=0;j<35;j++)drawPoint(hx+Xp+randn()*5,hy-sy+randn()*3,[255,150,40],.95,2);
       }
     }
-    // Floating pollen
     if(e>.6){
       const fa=smooth((e-.6)/.4);
       for(const q of seeds){
@@ -409,24 +387,21 @@ function render(time){
     }
   }
 
-  // Secret Heart Constellation Animation (triggered when she opens the message)
   if(heartMode){
     const ht = time - heartTime;
     for(const hp of heartParticles){
-      const p = smooth((ht - hp.delay*0.4) / 2.0);
+      const p = smooth((ht - hp.delay*0.35) / 1.8);
       if(p <= 0.01) continue;
-      // Swirl outward from the lily center into a beating 3D pointillism heart
-      const curAng = hp.ang + (1 - p) * 5.5;
+      const curAng = hp.ang + (1 - p) * 4.5;
       const startX = hx + Math.cos(curAng) * hp.rad * (1 - p);
       const startY = (hy - 95) + Math.sin(curAng) * hp.rad * (1 - p);
-      const beat = 1 + 0.035 * Math.sin(time * 4.2) * p;
+      const beat = 1 + 0.04 * Math.sin(time * 4.5) * p;
       const x = gx + (lerp(startX, hp.tx, p) - gx) * beat;
       const y = (gy - HS - 85) + (lerp(startY, hp.ty, p) - (gy - HS - 85)) * beat;
-      drawPoint(x, y, hp.c, p * 0.95, hp.r);
+      drawPoint(x, y, hp.c, p * 0.96, hp.r);
     }
   }
 
-  // Interactive pointer stardust trail
   for(let i=touchSparks.length-1;i>=0;i--){
     const sp=touchSparks[i];
     sp.x += sp.vx; sp.y += sp.vy; sp.vy -= 0.03; sp.life -= 0.022;
@@ -434,10 +409,9 @@ function render(time){
     drawPoint(sp.x, sp.y, sp.c, sp.life, 2);
   }
 
-  // Soft bloom glow
   ctx.save();
   ctx.globalCompositeOperation='screen';
-  ctx.globalAlpha = heartMode ? .26 : .18;
+  ctx.globalAlpha = heartMode ? .28 : .18;
   ctx.filter='blur(12px)';
   ctx.drawImage(canvas,0,0);
   ctx.restore();
@@ -449,7 +423,6 @@ function frame(now){
   last=now;render(t);raf=requestAnimationFrame(frame);
 }
 
-// Interactive touch/mouse sparkles
 function spawnSparks(clientX, clientY, count=8){
   const rect=canvas.getBoundingClientRect();
   const x=(clientX-rect.left)*(W/rect.width);
@@ -466,7 +439,6 @@ function spawnSparks(clientX, clientY, count=8){
 canvas.addEventListener('pointermove', e => spawnSparks(e.clientX, e.clientY, 4));
 canvas.addEventListener('pointerdown', e => spawnSparks(e.clientX, e.clientY, 18));
 
-// Secret Message Reveal Logic
 const triggerBtn = document.getElementById('secret-trigger');
 const overlay = document.getElementById('letter-overlay');
 const lines = document.querySelectorAll('.msg-line');
@@ -482,7 +454,6 @@ triggerBtn.addEventListener('click', () => {
   heartTime = t;
   triggerBtn.classList.remove('visible');
 
-  // Let the user watch the heart constellation form for 2.2 seconds before the card fades in
   clearMsgTimers();
   lines.forEach(l => l.classList.remove('shown'));
   sign.classList.remove('shown');
@@ -492,23 +463,21 @@ triggerBtn.addEventListener('click', () => {
     lines.forEach((line, idx) => {
       msgTimers.push(setTimeout(() => {
         line.classList.add('shown');
-      }, 600 + idx * 1850));
+      }, 500 + idx * 1600));
     });
     msgTimers.push(setTimeout(() => {
       sign.classList.add('shown');
-    }, 600 + lines.length * 1850));
-  }, 2100));
+    }, 500 + lines.length * 1600));
+  }, 1900));
 });
 
-// Close & release wish back into the stars
 document.getElementById('release-btn').addEventListener('click', () => {
   clearMsgTimers();
   overlay.classList.remove('open');
-  // Burst of golden stardust from the center when released
   const rect = canvas.getBoundingClientRect();
-  spawnSparks(rect.left + rect.width/2, rect.top + rect.height*0.42, 45);
+  spawnSparks(rect.left + rect.width/2, rect.top + rect.height*0.42, 50);
   setTimeout(() => {
-    document.getElementById('trigger-text').textContent = 'Read Secret Message Again';
+    document.getElementById('trigger-text').textContent = 'Read Message Again';
     triggerBtn.classList.add('visible');
   }, 900);
 });
@@ -524,7 +493,7 @@ document.getElementById('restart').addEventListener('click',()=>{
   clearMsgTimers();
   overlay.classList.remove('open');
   triggerBtn.classList.remove('visible');
-  document.getElementById('trigger-text').textContent = 'A Secret in the Stars for Rahil';
+  document.getElementById('trigger-text').textContent = 'A Message from My Heart to Rahil';
   heartMode = false;
   secretUnlocked = false;
   t=0;
@@ -536,9 +505,7 @@ document.getElementById('fullscreen').addEventListener('click',()=>{
 });
 document.addEventListener('keydown',e=>{
   if(e.code==='Space'){e.preventDefault();paused=!paused;document.getElementById('pause').textContent=paused?'Resume':'Pause';}
-  if(e.key.toLowerCase()==='r'){
-    document.getElementById('restart').click();
-  }
+  if(e.key.toLowerCase()==='r'){document.getElementById('restart').click();}
   if(e.key==='Escape'&&document.fullscreenElement)document.exitFullscreen?.();
 });
 })();
