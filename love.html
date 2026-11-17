@@ -190,7 +190,7 @@ function midrib(L,a0,curl,K=40){
 }
 function interp(arr,u){const x=clamp(u)*40,i=Math.min(39,Math.floor(x)),f=x-i;return lerp(arr[i],arr[i+1],f);}
 
-// Sample "Rahil" into pointillism star targets in the night sky
+// Sample "RAHIL" into pointillism star targets in the night sky
 function buildRahilConstellation(){
   const off=document.createElement('canvas');
   off.width=W; off.height=320;
@@ -199,8 +199,8 @@ function buildRahilConstellation(){
   octx.fillStyle='#fff';
   octx.textAlign='center';
   octx.textBaseline='middle';
-  octx.font='600 92px Georgia, "Times New Roman", serif';
-  octx.fillText('L Y L I A', W/2, 155);
+  octx.font='600 86px Georgia, "Times New Roman", serif';
+  octx.fillText('RAHIL', W/2, 155);
 
   const img=octx.getImageData(0,0,W,320).data;
   const candidates=[];
