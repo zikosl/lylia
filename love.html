@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>For Lylia — Pointillism Lily</title>
+<title>For Rahil — Pointillism Lily</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -120,20 +120,20 @@
 </style>
 </head>
 <body>
-<div id="stage" tabindex="0" aria-label="Animated pointillism lily for Lylia">
+<div id="stage" tabindex="0" aria-label="Animated pointillism lily for Rahil">
   <canvas id="flower" width="720" height="1280"></canvas>
-  <div class="hint" id="top-hint">A LILY FOR LYLIA</div>
+  <div class="hint" id="top-hint">A LILY FOR Rahil</div>
 
   <!-- Hidden Message Trigger -->
-  <button id="secret-trigger" aria-label="Reveal hidden message for Lylia">
+  <button id="secret-trigger" aria-label="Reveal hidden message for Rahil">
     <span class="spark-dot"></span>
-    <span id="trigger-text">A Secret in the Stars for Lylia</span>
+    <span id="trigger-text">A Secret in the Stars for Rahil</span>
   </button>
 
   <!-- Hidden Confession Card -->
   <div id="letter-overlay" role="dialog" aria-modal="true">
     <div class="letter-card">
-      <h2 class="letter-header">Dearest Lylia,</h2>
+      <h2 class="letter-header">Dearest Rahil,</h2>
       <div class="letter-divider"></div>
       <div class="letter-body" id="letter-lines">
         <div class="msg-line">Since the very first sight, something about you quietly captured my heart.</div>
@@ -190,8 +190,8 @@ function midrib(L,a0,curl,K=40){
 }
 function interp(arr,u){const x=clamp(u)*40,i=Math.min(39,Math.floor(x)),f=x-i;return lerp(arr[i],arr[i+1],f);}
 
-// Sample "LYLIA" into pointillism star targets in the night sky
-function buildLyliaConstellation(){
+// Sample "Rahil" into pointillism star targets in the night sky
+function buildRahilConstellation(){
   const off=document.createElement('canvas');
   off.width=W; off.height=320;
   const octx=off.getContext('2d');
@@ -298,7 +298,7 @@ function makeData(){
   for(let i=0;i<450;i++)dust.push({x:rand()*W,y:rand()*H,s:lerp(6,22,rand()),ph:rand()*6.28,f:lerp(1,4,rand())});
   for(let i=0;i<140;i++)seeds.push({float:true,off:rand(),ph:rand()*6.28,dr:lerp(-80,80,rand()),sp:lerp(.05,.12,rand())});
 
-  buildLyliaConstellation();
+  buildRahilConstellation();
   buildHeartConstellation();
 }
 
@@ -340,7 +340,7 @@ function render(time){
     ctx.restore();
   }
 
-  // "LYLIA" Starry Sky Constellation (emerges from the blooming lily)
+  // "Rahil" Starry Sky Constellation (emerges from the blooming lily)
   if(time > 7.2){
     for(const st of nameStars){
       const p = smooth((time - 7.2 - st.delay) / 3.4);
@@ -524,7 +524,7 @@ document.getElementById('restart').addEventListener('click',()=>{
   clearMsgTimers();
   overlay.classList.remove('open');
   triggerBtn.classList.remove('visible');
-  document.getElementById('trigger-text').textContent = 'A Secret in the Stars for Lylia';
+  document.getElementById('trigger-text').textContent = 'A Secret in the Stars for Rahil';
   heartMode = false;
   secretUnlocked = false;
   t=0;
